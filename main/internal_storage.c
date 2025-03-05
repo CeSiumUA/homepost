@@ -1,6 +1,6 @@
 #include "internal_storage.h"
 
-const char *TAG = __FILE__;
+static const char *TAG = __FILE__;
 
 void internal_storage_init(void){
     esp_err_t ret = nvs_flash_init();

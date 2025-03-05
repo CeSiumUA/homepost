@@ -5,5 +5,12 @@
 #include <stdbool.h>
 #include "esp_log.h"
 #include "esp_err.h"
+#include "esp_bt_main.h"
+#include "esp_bt.h"
+#include "esp_gap_ble_api.h"
+#include "string.h"
+
+esp_err_t ble_scanner_init(void);
+esp_err_t ble_scanner_start(void);
 
 #endif
