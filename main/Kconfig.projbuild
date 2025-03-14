@@ -1,0 +1,22 @@
+menu "homepost configuration"
+
+    menu "BT Options"
+        config HOMEPOST_BT_DEV_NAME
+            string "BT device name"
+            default "homepost"
+
+        config HOMEPOST_BT_INQ_LEN
+            int "BT inquiry length"
+            default 30
+
+        config HOMEPOST_PRINT_BLE_DEVICE_NAME
+            bool "Print BLE device name"
+            default n
+    endmenu
+
+    menu "Scanner Options"
+        config HOMEPOST_SCAN_RSSI_THRESHOLD
+            int "RSSI threshold"
+            default -90
+    endmenu
+endmenu

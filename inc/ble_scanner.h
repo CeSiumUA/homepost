@@ -10,7 +10,9 @@
 #include "esp_gap_ble_api.h"
 #include "string.h"
 
+typedef void (* ble_scanned_device_cb_t)(esp_ble_gap_cb_param_t *param);
+
 esp_err_t ble_scanner_init(void);
-esp_err_t ble_scanner_start(void);
+esp_err_t ble_scanner_start(ble_scanned_device_cb_t cb);
 
 #endif

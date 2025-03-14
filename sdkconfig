@@ -385,6 +385,25 @@ CONFIG_PARTITION_TABLE_MD5=y
 # end of Partition Table
 
 #
+# homepost configuration
+#
+
+#
+# BT Options
+#
+CONFIG_HOMEPOST_BT_DEV_NAME="homepost"
+CONFIG_HOMEPOST_BT_INQ_LEN=30
+# CONFIG_HOMEPOST_PRINT_BLE_DEVICE_NAME is not set
+# end of BT Options
+
+#
+# Scanner Options
+#
+CONFIG_HOMEPOST_SCAN_RSSI_THRESHOLD=-70
+# end of Scanner Options
+# end of homepost configuration
+
+#
 # Compiler options
 #
 CONFIG_COMPILER_OPTIMIZATION_DEBUG=y
