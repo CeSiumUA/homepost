@@ -10,7 +10,8 @@
 			"*.ndjson": "jsonl",
 			"*.dbclient-js": "javascript",
 			"bt_scanner.h": "c",
-			"ble_scanner.h": "c"
+			"ble_scanner.h": "c",
+			"random": "c"
 		}
 	}
 }

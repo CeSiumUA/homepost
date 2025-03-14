@@ -15,8 +15,21 @@ menu "homepost configuration"
     endmenu
 
     menu "Scanner Options"
+
+        config HOMEPOST_SCAN_USE_RSSI_FILTER
+            bool "Use RSSI filter"
+            default n
+
         config HOMEPOST_SCAN_RSSI_THRESHOLD
             int "RSSI threshold"
             default -90
+
+        config HOMEPOST_SCAN_MAJOR_FILTER
+            int "Major filter"
+            default 100
+
+        config HOMEPOST_SCAN_MINOR_FILTER
+            int "Minor filter"
+            default 40004
     endmenu
 endmenu

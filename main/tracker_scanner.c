@@ -14,8 +14,15 @@ static EventGroupHandle_t tracker_scanner_event_group;
 static void tracker_scanner_cb(esp_ble_gap_cb_param_t *param){
     if(esp_ble_is_ibeacon_packet(param->scan_rst.ble_adv, param->scan_rst.adv_data_len)){
         ESP_LOGI(TAG, "iBeacon found (RSSI: %d dB)", param->scan_rst.rssi);
-        if (param->scan_rst.rssi > CONFIG_HOMEPOST_SCAN_RSSI_THRESHOLD){
+        esp_ble_ibeacon_t *ibeacon_data = (esp_ble_ibeacon_t*)(param->scan_rst.ble_adv);
+        if (ibeacon_data->ibeacon_vendor.major == CONFIG_HOMEPOST_SCAN_MAJOR && ibeacon_data->ibeacon_vendor.minor == CONFIG_HOMEPOST_SCAN_MINOR){
+#ifdef CONFIG_HOMEPOST_SCAN_USE_RSSI_FILTER
+            if (param->scan_rst.rssi > CONFIG_HOMEPOST_SCAN_RSSI_THRESHOLD){
+                xEventGroupSetBits(tracker_scanner_event_group, TRACKER_SCANNER_EVENT_BIT);
+            }
+#else
             xEventGroupSetBits(tracker_scanner_event_group, TRACKER_SCANNER_EVENT_BIT);
+#endif
         }
     }
 }
