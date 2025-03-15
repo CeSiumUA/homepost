@@ -33,4 +33,12 @@ menu "homepost configuration"
             int "Minor filter"
             default 40004
     endmenu
+
+    menu "Storage Configuration"
+        config HOMEPOST_WIFI_CREDENTIALS_STORAGE_KEY
+            string "WiFi Credentials Storage Key"
+            default "wifi_crds"
+            help
+                Key used to store the WiFi credentials in the NVS storage.
+    endmenu
 endmenu

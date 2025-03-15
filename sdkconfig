@@ -403,6 +403,12 @@ CONFIG_HOMEPOST_BT_INQ_LEN=30
 CONFIG_HOMEPOST_SCAN_MAJOR_FILTER=100
 CONFIG_HOMEPOST_SCAN_MINOR_FILTER=40004
 # end of Scanner Options
+
+#
+# Storage Configuration
+#
+CONFIG_HOMEPOST_WIFI_CREDENTIALS_STORAGE_KEY="wifi_crds"
+# end of Storage Configuration
 # end of homepost configuration
 
 #
