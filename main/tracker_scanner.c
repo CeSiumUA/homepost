@@ -15,7 +15,7 @@ TaskHandle_t scanner_task_handle = NULL;
 static void tracker_scanner_cb(esp_ble_gap_cb_param_t *param){
     if(esp_ble_is_ibeacon_packet(param->scan_rst.ble_adv, param->scan_rst.adv_data_len)){
         esp_ble_ibeacon_t *ibeacon_data = (esp_ble_ibeacon_t*)(param->scan_rst.ble_adv);
-        ESP_LOGI(TAG, "iBeacon found (RSSI: %d dB)", param->scan_rst.rssi);
+        ESP_LOGD(TAG, "iBeacon found (RSSI: %d dB)", param->scan_rst.rssi);
 
         uint16_t major = ENDIAN_CHANGE_U16(ibeacon_data->ibeacon_vendor.major);
         uint16_t minor = ENDIAN_CHANGE_U16(ibeacon_data->ibeacon_vendor.minor);
@@ -61,7 +61,7 @@ static void tracker_scanner_task(void *arg){
     while(true){
         EventBits_t bits = xEventGroupWaitBits(tracker_scanner_event_group, TRACKER_SCANNER_EVENT_BIT, pdTRUE, pdFALSE, TRACKER_SCANNER_SCAN_TIMEOUT);
         if (bits & TRACKER_SCANNER_EVENT_BIT){
-            ESP_LOGI(TAG, "Tracker found");
+            ESP_LOGD(TAG, "Tracker found");
         }
         else{
             ESP_LOGI(TAG, "Tracker lost");

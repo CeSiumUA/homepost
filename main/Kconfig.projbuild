@@ -41,4 +41,57 @@ menu "homepost configuration"
             help
                 Key used to store the WiFi credentials in the NVS storage.
     endmenu
+
+    menu "WiFi Configuration"
+        config HOMEPOST_WIFI_SOFTAP_SSID
+            string "Soft AP WiFi SSID"
+            default "HOMEPOST"
+            help
+                SSID (network name) for the example to connect to.
+    
+        config HOMEPOST_WIFI_SOFTAP_PASSWORD
+            string "Soft AP WiFi Password"
+            default "12345678"
+            help
+                WiFi password (WPA or WPA2) for the example to use.
+                Can be left blank if the network has no security set.
+    
+        config HOMEPOST_WIFI_SOFTAP_CHANNEL
+            int "Soft AP WiFi Channel"
+            default 1
+            help
+                WiFi channel for the Soft AP use.
+    
+        config HOMEPOST_WIFI_SOFTAP_MAX_CONNECTIONS
+            int "Soft AP Max Connections"
+            default 1
+            help
+                Maximum number of stations that can be connected to the Soft AP.
+
+        config HOMEPOST_WIFI_SOFTAP_HOSTNAME
+            string "Soft AP Hostname"
+            default "HOMEPOST"
+            help
+                Hostname for the Soft AP.
+
+        config HOMEPOST_WIFI_STA_MAX_RETRIES
+            int "WiFi STA Max Retries"
+            default 5
+            help
+                Maximum number of retries to connect to the WiFi network.
+    endmenu
+
+    menu "HTTP Server Configuration"
+        config HOMEPOST_HTTP_SERVER_PORT
+            int "HTTP Server Port"
+            default 80
+            help
+                Port for the HTTP server to listen on.
+
+        config HOMEPOST_RESTART_DELAY_MICROSECONDS
+            int "Restart Delay Microseconds"
+            default 3000000
+            help
+                Restart delay in microseconds.
+    endmenu
 endmenu
