@@ -23,6 +23,7 @@ menu "homepost configuration"
         config HOMEPOST_SCAN_RSSI_THRESHOLD
             int "RSSI threshold"
             default -90
+            depends on HOMEPOST_SCAN_USE_RSSI_FILTER
 
         config HOMEPOST_SCAN_MAJOR_FILTER
             int "Major filter"
