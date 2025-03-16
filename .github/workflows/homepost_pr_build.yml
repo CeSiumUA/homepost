@@ -1,7 +1,6 @@
 name: Build a project
 
 on:
-  push:
   pull_request:
     branches: [ "main" ]
 
