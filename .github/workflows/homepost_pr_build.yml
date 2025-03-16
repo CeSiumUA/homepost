@@ -21,3 +21,11 @@ jobs:
         esp_idf_version: v5.3
         target: esp32
         path: '.'
+
+    - name: esp-idf clean
+      uses: espressif/esp-idf-ci-action@v1
+      with:
+        esp_idf_version: v5.3
+        target: esp32
+        path: '.'
+        command: 'idf.py clean'
