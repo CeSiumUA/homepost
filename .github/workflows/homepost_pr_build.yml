@@ -1,7 +1,6 @@
 name: Build a project
 
 on:
-  push:
   pull_request:
     branches: [ "main" ]
 
@@ -10,11 +9,17 @@ jobs:
 
     runs-on: self-hosted
 
+    env:
+      CONTAINER_NAME: homepost_container
+
     steps:
     - name: Checkout repo
       uses: actions/checkout@v2
       with:
         submodules: 'recursive'
+
+    - name: Remove old container
+      run: docker rm ${{ env.CONTAINER_NAME }} || true
 
     - name: esp-idf build
       uses: espressif/esp-idf-ci-action@v1
@@ -22,3 +27,4 @@ jobs:
         esp_idf_version: v5.3
         target: esp32
         path: '.'
+        extra_docker_args: --name ${{ env.CONTAINER_NAME }}
