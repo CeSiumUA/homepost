@@ -10,13 +10,14 @@ void app_main(void)
 
     wifi_init();
 
-    if(internal_storage_check_wifi_credentials_preserved()){
-        wifi_connect_sta(false);
-    } else {
+    if(!internal_storage_check_wifi_credentials_preserved()){
         wifi_start_softap();
         http_server_init();
         http_server_start();
+        return;
     }
+
+    wifi_connect_sta(false);
 
     tracker_scanner_start_task();
 }
