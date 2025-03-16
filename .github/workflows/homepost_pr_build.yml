@@ -21,6 +21,7 @@ jobs:
         esp_idf_version: v5.3
         target: esp32
         path: '.'
+        extra_docker_args: --name homepost_container
 
     - name: esp-idf clean
       uses: espressif/esp-idf-ci-action@v1
@@ -29,3 +30,4 @@ jobs:
         target: esp32
         path: '.'
         command: 'idf.py clean'
+        extra_docker_args: --name homepost_container
