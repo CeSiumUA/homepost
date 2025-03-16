@@ -21,6 +21,9 @@ jobs:
     - name: Remove old container
       run: docker rm ${{ env.CONTAINER_NAME }} || true
 
+    - name: Remove build directory
+      run: rm -rf build
+
     - name: esp-idf build
       uses: espressif/esp-idf-ci-action@v1
       with:
