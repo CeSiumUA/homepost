@@ -15,19 +15,13 @@ jobs:
       with:
         submodules: 'recursive'
 
+    - name: Remove old container
+      run: docker rm homepost_container || true
+
     - name: esp-idf build
       uses: espressif/esp-idf-ci-action@v1
       with:
         esp_idf_version: v5.3
         target: esp32
         path: '.'
-        extra_docker_args: --name homepost_container
-
-    - name: esp-idf clean
-      uses: espressif/esp-idf-ci-action@v1
-      with:
-        esp_idf_version: v5.3
-        target: esp32
-        path: '.'
-        command: 'idf.py clean'
         extra_docker_args: --name homepost_container
