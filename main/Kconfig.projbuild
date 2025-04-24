@@ -121,6 +121,14 @@ menu "homepost configuration"
             default 5
             help
                 Maximum number of retries to connect to the WiFi network.
+
+        config HOMEPOST_WIFI_RECONNECTION_TIMER_PERIOD_US
+            int "WiFi Reconnection Timer Period (us)"
+            default 180000000
+            help
+                Period of the reconnection timer in microseconds.
+                This is the time between reconnection attempts.
+                The default value is 60 seconds.
     endmenu
 
     menu "HTTP Server Configuration"

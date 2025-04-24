@@ -11,7 +11,8 @@
 			"*.dbclient-js": "javascript",
 			"bt_scanner.h": "c",
 			"ble_scanner.h": "c",
-			"random": "c"
+			"random": "c",
+			"http_server.h": "c"
 		}
 	}
 }

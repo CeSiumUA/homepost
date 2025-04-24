@@ -4,8 +4,30 @@
 #include "wifi.h"
 #include "http_server.h"
 #include "esp_log.h"
+#include <esp_timer.h>
+
+static void wifi_reconnection_timber_cb(void *arg);
+
+static esp_timer_handle_t wifi_reconnection_timer;
+
+static const esp_timer_create_args_t wifi_reconnection_timer_args = {
+    .callback = &wifi_reconnection_timber_cb,
+};
 
 const char *TAG = __FILE__;
+
+static void wifi_reconnection_timber_cb(void *arg)
+{
+    bool reconnection_succeeded = false;
+    reconnection_succeeded = wifi_connect_sta(false);
+    if(reconnection_succeeded){
+        ESP_LOGI(TAG, "WiFi reconnection succeeded");
+        esp_timer_stop(wifi_reconnection_timer);
+    }
+    else{
+        ESP_LOGI(TAG, "WiFi reconnection failed");
+    }
+}
 
 void app_main(void)
 {
@@ -16,6 +38,14 @@ void app_main(void)
 
     if(internal_storage_check_wifi_credentials_preserved()){
         connected_to_ap = wifi_connect_sta(false);
+        if (!connected_to_ap){
+            ESP_LOGI(TAG, "WiFi connection failed, starting reconnection timer");
+            esp_timer_create(&wifi_reconnection_timer_args, &wifi_reconnection_timer);
+            esp_timer_start_periodic(wifi_reconnection_timer, CONFIG_HOMEPOST_WIFI_RECONNECTION_TIMER_PERIOD_US);
+        }
+        else{
+            ESP_LOGI(TAG, "WiFi connection succeeded");
+        }
     }
     
     if(!connected_to_ap){
