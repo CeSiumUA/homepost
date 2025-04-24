@@ -102,9 +102,15 @@ static const httpd_uri_t root = {
 };
 
 static const httpd_uri_t configure_wifi = {
-    .uri       = "/configure_wifi",
+    .uri       = "/wifi-setup",
     .method    = HTTP_POST,
     .handler   = configure_wifi_post_handler
+};
+
+static const httpd_uri_t configure_mqtt = {
+    .uri       = "/mqtt-setup",
+    .method    = HTTP_POST,
+    .handler   = NULL // Not implemented yet
 };
 
 static httpd_handle_t start_webserver(void)
@@ -141,6 +147,7 @@ static httpd_handle_t start_webserver(void)
     ESP_LOGI(TAG, "Registering URI handlers");
     httpd_register_uri_handler(http_server, &root);
     httpd_register_uri_handler(http_server, &configure_wifi);
+    httpd_register_uri_handler(http_server, &configure_mqtt);
     return http_server;
 }
 
