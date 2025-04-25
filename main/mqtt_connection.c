@@ -12,7 +12,7 @@ const char *TAG = __FILE__;
 QueueHandle_t mqtt_connection_message_queue = NULL;
 
 static EventGroupHandle_t mqtt_connection_event_group;
-static esp_mqtt_client_handle_t client;
+static esp_mqtt_client_handle_t client = NULL;
 static TaskHandle_t mqtt_connection_task_handle = NULL;
 static bool mqtt_connection_task_running = false;
 
@@ -61,7 +61,6 @@ static esp_err_t mqtt_connection_start(void){
     char mqtt_broker[100] = {0};
     uint16_t mqtt_port = 0;
     char mqtt_username[64] = {0};
-    char mqtt_client_id[64] = {0};
     char mqtt_password[64] = {0};
 
     mqtt_broker_connection_allowed &= internal_storage_check_mqtt_broker_preserved();
@@ -78,12 +77,10 @@ static esp_err_t mqtt_connection_start(void){
     ESP_ERROR_CHECK(internal_storage_get_mqtt_broker(mqtt_broker));
     ESP_ERROR_CHECK(internal_storage_get_mqtt_port(&mqtt_port));
     ESP_ERROR_CHECK(internal_storage_get_mqtt_username(mqtt_username));
-    ESP_ERROR_CHECK(internal_storage_get_mqtt_client_id(mqtt_client_id));
     ESP_ERROR_CHECK(internal_storage_get_mqtt_password(mqtt_password));
-    
+
     ESP_LOGD(TAG, "MQTT broker: %s:%d", mqtt_broker, mqtt_port);
     ESP_LOGD(TAG, "MQTT username: %s", mqtt_username);
-    ESP_LOGD(TAG, "MQTT client ID: %s", mqtt_client_id);
 
     const esp_mqtt_client_config_t mqtt_config = {
         .broker = {
@@ -92,7 +89,7 @@ static esp_err_t mqtt_connection_start(void){
         },
         .credentials = {
             .username = mqtt_username,
-            .client_id = mqtt_client_id,
+            .client_id = NULL,
             .authentication.password = mqtt_password,
         },
     };
@@ -145,8 +142,26 @@ static void mqtt_connection_publish_loop(void){
     }
 }
 
+static void mqtt_connection_stop(void){
+    mqtt_connection_task_running = false;
+    if (client != NULL){
+        esp_mqtt_client_disconnect(client);
+        esp_mqtt_client_stop(client);
+        esp_mqtt_client_destroy(client);
+        mqtt_connection_task_handle = NULL;
+    }
+}
+
 static void mqtt_connection_task(void *arg){
     esp_err_t ret;
+
+    if (mqtt_connection_event_group == NULL) {
+        mqtt_connection_event_group = xEventGroupCreate();
+        if (mqtt_connection_event_group == NULL) {
+            ESP_LOGE(TAG, "Failed to create MQTT connection event group");
+            vTaskDelete(NULL);
+        }
+    }
 
     if (mqtt_connection_message_queue == NULL) {
         mqtt_connection_message_queue = xQueueCreate(CONFIG_HOMEPOST_MQTT_PUBLISH_QUEUE_SIZE, sizeof(struct mqtt_connection_message_t));
@@ -167,14 +182,42 @@ static void mqtt_connection_task(void *arg){
     mqtt_connection_publish_loop();
 
     ESP_LOGI(TAG, "MQTT publish loop exited");
-    mqtt_connection_task_running = false;
-    esp_mqtt_client_stop(client);
-    esp_mqtt_client_destroy(client);
-    mqtt_connection_task_handle = NULL;
-    vTaskDelete(NULL);
+    mqtt_connection_stop_task();
+}
+
+void mqtt_connection_stop_task(void){
+
+    mqtt_connection_stop();
+
+    if(mqtt_connection_message_queue != NULL){
+        vQueueDelete(mqtt_connection_message_queue);
+        mqtt_connection_message_queue = NULL;
+    }
+    if(mqtt_connection_event_group != NULL){
+        vEventGroupDelete(mqtt_connection_event_group);
+        mqtt_connection_event_group = NULL;
+    }
+    if(mqtt_connection_task_handle != NULL){
+        vTaskDelete(mqtt_connection_task_handle);
+        mqtt_connection_task_handle = NULL;
+    }
 }
 
 void mqtt_connection_start_task(void){
-    mqtt_connection_event_group = xEventGroupCreate();
+    if (mqtt_connection_task_handle != NULL) {
+        ESP_LOGW(TAG, "MQTT connection task already running, stopping it first");
+        mqtt_connection_stop_task();
+    }
     xTaskCreate(mqtt_connection_task, MQTT_CONNECTION_TASK_NAME, MQTT_CONNECTION_STACK_SIZE, NULL, MQTT_CONNECTION_TASK_PRIORITY, &mqtt_connection_task_handle);
+}
+
+bool mqtt_connection_put_publish_queue(struct mqtt_connection_message_t *msg){
+    BaseType_t ret = pdFALSE;
+    if(mqtt_connection_message_queue != NULL){
+        ret = xQueueSend(mqtt_connection_message_queue, msg, 0);
+    } else {
+        ESP_LOGE(TAG, "MQTT connection message queue is NULL");
+    }
+
+    return ret == pdTRUE;
 }

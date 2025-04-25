@@ -15,6 +15,7 @@
 #include "sdkconfig.h"
 #include "wifi.h"
 #include "internal_storage.h"
+#include "mqtt_connection.h"
 
 void http_server_init(void);
 void http_server_start(void);

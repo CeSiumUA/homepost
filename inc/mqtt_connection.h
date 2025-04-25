@@ -2,6 +2,7 @@
 #define MQTT_CONNECTION_H
 
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
@@ -17,9 +18,13 @@
 #include "internal_storage.h"
 
 struct mqtt_connection_message_t {
-    char topic[100];
-    char payload[100];
+    char *topic;
+    char *payload;
     uint8_t qos;
 };
+
+void mqtt_connection_stop_task(void);
+void mqtt_connection_start_task(void);
+bool mqtt_connection_put_publish_queue(struct mqtt_connection_message_t *msg);
 
 #endif
