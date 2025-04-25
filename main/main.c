@@ -14,7 +14,7 @@ static const esp_timer_create_args_t wifi_reconnection_timer_args = {
     .callback = &wifi_reconnection_timber_cb,
 };
 
-const char *TAG = __FILE__;
+static const char *TAG = __FILE__;
 
 static void wifi_reconnection_timber_cb(void *arg)
 {

@@ -7,7 +7,7 @@
 #define MQTT_CONNECTION_CONNECTION_ERROR_EVENT_BIT          BIT1
 #define MQTT_CONNECTION_PUBLISH_EVENT_BIT                   BIT2
 
-const char *TAG = __FILE__;
+static const char *TAG = __FILE__;
 
 QueueHandle_t mqtt_connection_message_queue = NULL;
 
