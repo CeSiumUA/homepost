@@ -5,6 +5,7 @@
 #define MQTT_CONNECTION_TASK_NAME                           "mqtt_conn"
 #define MQTT_CONNECTION_CONNECTED_EVENT_BIT                 BIT0
 #define MQTT_CONNECTION_CONNECTION_ERROR_EVENT_BIT          BIT1
+#define MQTT_CONNECTION_PUBLISH_EVENT_BIT                   BIT2
 
 const char *TAG = __FILE__;
 
@@ -39,6 +40,7 @@ static void mqtt_connection_event_handler(void *handler_args, esp_event_base_t b
             break;
         case MQTT_EVENT_PUBLISHED:
             ESP_LOGD(TAG, "MQTT_EVENT_PUBLISHED");
+            xEventGroupSetBits(mqtt_connection_event_group, MQTT_CONNECTION_PUBLISH_EVENT_BIT);
             break;
         case MQTT_EVENT_DATA:
             ESP_LOGD(TAG, "MQTT_EVENT_DATA");
@@ -126,6 +128,20 @@ static void mqtt_connection_publish_loop(void){
 
     while(mqtt_connection_task_running){
         xEventGroupWaitBits(mqtt_connection_event_group, MQTT_CONNECTION_CONNECTED_EVENT_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
+
+        if(xQueueReceive(mqtt_connection_message_queue, &msg, portMAX_DELAY) == pdTRUE){
+            ESP_LOGI(TAG, "Publishing message to topic: %s", msg.topic);
+            ret = esp_mqtt_client_publish(client, msg.topic, msg.payload, 0, msg.qos, 0);
+            if(ret < 0){
+                ESP_LOGE(TAG, "Failed to publish message to topic: %s", msg.topic);
+            } else {
+                ESP_LOGI(TAG, "Message routed to publishing successfully");
+                xEventGroupWaitBits(mqtt_connection_event_group, MQTT_CONNECTION_PUBLISH_EVENT_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
+                ESP_LOGI(TAG, "Message published successfully to topic: %s", msg.topic);
+            }
+        } else {
+            ESP_LOGE(TAG, "Failed to receive message from queue");
+        }
     }
 }
 
