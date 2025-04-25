@@ -163,5 +163,11 @@ menu "homepost configuration"
             default "homepost"
             help
                 MQTT topic to publish to.
+
+        config HOMEPOST_MQTT_PUBLISH_QUEUE_SIZE
+            int "MQTT Publish Queue Size"
+            default 10
+            help
+                Size of the MQTT publish queue.
     endmenu
 endmenu

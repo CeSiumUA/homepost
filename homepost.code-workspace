@@ -12,7 +12,10 @@
 			"bt_scanner.h": "c",
 			"ble_scanner.h": "c",
 			"random": "c",
-			"http_server.h": "c"
+			"http_server.h": "c",
+			"mqtt_connection.h": "c",
+			"internal_storage.h": "c",
+			"esp_event.h": "c"
 		}
 	}
 }
