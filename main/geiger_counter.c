@@ -4,7 +4,7 @@
 #include <esp_timer.h>
 
 #define GPIO_CPM_PIN_SEL                                GPIO_NUM_4
-#define GPIO_CPM_INPUT_PIN                              (1 << GPIO_CPM_PIN_SEL)
+#define GPIO_CPM_INPUT_PIN                              (1ULL<<GPIO_CPM_PIN_SEL)
 #define GPIO_INTR_FLAG_DEFAULT                          (0)
 #define GEIGER_COUNTER_CONVERSION_FACTOR                ((CONFIG_HOMEPOST_GEIGER_COUNTER_CONVERSION_FACTOR) / 1000000.0f)
 
@@ -22,9 +22,10 @@ static struct mqtt_connection_message_t radiation_message = {
 static const char *TAG = __FILE__;
 
 static gpio_config_t io_config = {
-    .intr_type = GPIO_INTR_POSEDGE,
+    .intr_type = GPIO_INTR_NEGEDGE,
     .mode = GPIO_MODE_INPUT,
     .pin_bit_mask = GPIO_CPM_INPUT_PIN,
+    .pull_down_en = GPIO_PULLDOWN_DISABLE,
     .pull_up_en = GPIO_PULLUP_ENABLE
 };
 
@@ -40,8 +41,8 @@ static uint32_t cpm_index = 0;
 static bool cpm_history_full = false;
 
 static void IRAM_ATTR geiger_counter_gpio_isr_handler(void *arg) {
-    gpio_num_t *gpio_num = (gpio_num_t *)arg;
-    if (*gpio_num != GPIO_CPM_PIN_SEL) {
+    gpio_num_t gpio_num = (gpio_num_t)arg;
+    if (gpio_num != GPIO_CPM_PIN_SEL) {
         return;
     }
 
@@ -91,7 +92,7 @@ static void geiger_counter_timer_cb(void *arg)
 void geiger_counter_start(void){
     ESP_ERROR_CHECK(gpio_config(&io_config));
     ESP_ERROR_CHECK(gpio_install_isr_service(GPIO_INTR_FLAG_DEFAULT));
-    ESP_ERROR_CHECK(gpio_isr_handler_add(GPIO_CPM_PIN_SEL, geiger_counter_gpio_isr_handler, GPIO_CPM_PIN_SEL));
+    ESP_ERROR_CHECK(gpio_isr_handler_add(GPIO_CPM_PIN_SEL, geiger_counter_gpio_isr_handler, (void *)GPIO_CPM_PIN_SEL));
     ESP_ERROR_CHECK(esp_timer_create(&geiger_counter_timer_args, &geiger_counter_timer));
     ESP_ERROR_CHECK(esp_timer_start_periodic(geiger_counter_timer, CONFIG_HOMEPOST_GEIGER_COUNTER_TIMER_PERIOD_MS * 1000));
 }

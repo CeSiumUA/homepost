@@ -39,7 +39,7 @@ static void mqtt_connection_event_handler(void *handler_args, esp_event_base_t b
             ESP_LOGD(TAG, "MQTT_EVENT_UNSUBSCRIBED");
             break;
         case MQTT_EVENT_PUBLISHED:
-            ESP_LOGD(TAG, "MQTT_EVENT_PUBLISHED");
+            ESP_LOGI(TAG, "MQTT_EVENT_PUBLISHED");
             xEventGroupSetBits(mqtt_connection_event_group, MQTT_CONNECTION_PUBLISH_EVENT_BIT);
             break;
         case MQTT_EVENT_DATA:
@@ -137,10 +137,15 @@ static void mqtt_connection_publish_loop(void){
             ret = esp_mqtt_client_publish(client, msg.topic, msg.payload, 0, msg.qos, 0);
             if(ret < 0){
                 ESP_LOGE(TAG, "Failed to publish message to topic: %s", msg.topic);
-            } else {
-                ESP_LOGI(TAG, "Message routed to publishing successfully");
+            }
+            else if (ret == 0) {
+                ESP_LOGI(TAG, "Message with QoS 0 published without confirmation");
+            }
+            else {
+                ESP_LOGI(TAG, "Message %d routed to publishing successfully", ret);
                 xEventGroupWaitBits(mqtt_connection_event_group, MQTT_CONNECTION_PUBLISH_EVENT_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
                 ESP_LOGI(TAG, "Message published successfully to topic: %s", msg.topic);
+                xEventGroupClearBits(mqtt_connection_event_group, MQTT_CONNECTION_PUBLISH_EVENT_BIT);
             }
         } else {
             ESP_LOGE(TAG, "Failed to receive message from queue");
