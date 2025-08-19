@@ -72,7 +72,7 @@ static void geiger_counter_timer_cb(void *arg)
         cpm_sum += cpm_history[i];
     }
 
-    average_cpm = cpm_sum / (cpm_history_full ? CONFIG_HOMEPOST_GEIGER_COUNTER_CPM_HISTORY_DEPTH : cpm_index);
+    average_cpm = (float)cpm_sum / (float)(cpm_history_full ? CONFIG_HOMEPOST_GEIGER_COUNTER_CPM_HISTORY_DEPTH : cpm_index);
     average_usvh = average_cpm * GEIGER_COUNTER_CONVERSION_FACTOR;
 
     ESP_LOGI(TAG, "Average CPM: %f, Average uSv/h: %f", average_cpm, average_usvh);
