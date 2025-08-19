@@ -170,4 +170,25 @@ menu "homepost configuration"
             help
                 Size of the MQTT publish queue.
     endmenu
+
+    menu "Geiger counter Configuration"
+        config HOMEPOST_GEIGER_COUNTER_TIMER_PERIOD_MS
+            int "Geiger Counter Timer Period (ms)"
+            default 60000
+            help
+                Period of the Geiger counter timer in milliseconds.
+                This is the time between updates of the CPM value.
+
+        config HOMEPOST_GEIGER_COUNTER_CPM_HISTORY_DEPTH
+            int "Geiger Counter CPM History Depth"
+            default 5
+            help
+                Depth of the CPM history buffer.
+
+        config HOMEPOST_GEIGER_COUNTER_CONVERSION_FACTOR
+            int "Geiger Counter Conversion Factor (1e6)"
+            default 3320
+            help
+                Conversion factor to convert counts to CPM.
+    endmenu
 endmenu

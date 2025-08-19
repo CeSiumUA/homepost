@@ -217,7 +217,7 @@ void mqtt_connection_start_task(void){
     xTaskCreate(mqtt_connection_task, MQTT_CONNECTION_TASK_NAME, MQTT_CONNECTION_STACK_SIZE, NULL, MQTT_CONNECTION_TASK_PRIORITY, &mqtt_connection_task_handle);
 }
 
-bool mqtt_connection_put_publish_queue(struct mqtt_connection_message_t *msg){
+esp_err_t mqtt_connection_put_publish_queue(struct mqtt_connection_message_t *msg){
     BaseType_t ret = pdFALSE;
     if(mqtt_connection_message_queue != NULL){
         ret = xQueueSend(mqtt_connection_message_queue, msg, 0);
@@ -225,5 +225,5 @@ bool mqtt_connection_put_publish_queue(struct mqtt_connection_message_t *msg){
         ESP_LOGE(TAG, "MQTT connection message queue is NULL");
     }
 
-    return ret == pdTRUE;
+    return ret == pdTRUE ? ESP_OK : ESP_FAIL;
 }

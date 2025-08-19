@@ -25,6 +25,6 @@ struct mqtt_connection_message_t {
 
 void mqtt_connection_stop_task(void);
 void mqtt_connection_start_task(void);
-bool mqtt_connection_put_publish_queue(struct mqtt_connection_message_t *msg);
+esp_err_t mqtt_connection_put_publish_queue(struct mqtt_connection_message_t *msg);
 
 #endif
