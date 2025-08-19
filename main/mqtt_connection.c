@@ -39,7 +39,7 @@ static void mqtt_connection_event_handler(void *handler_args, esp_event_base_t b
             ESP_LOGD(TAG, "MQTT_EVENT_UNSUBSCRIBED");
             break;
         case MQTT_EVENT_PUBLISHED:
-            ESP_LOGD(TAG, "MQTT_EVENT_PUBLISHED");
+            ESP_LOGI(TAG, "MQTT_EVENT_PUBLISHED");
             xEventGroupSetBits(mqtt_connection_event_group, MQTT_CONNECTION_PUBLISH_EVENT_BIT);
             break;
         case MQTT_EVENT_DATA:
@@ -137,10 +137,15 @@ static void mqtt_connection_publish_loop(void){
             ret = esp_mqtt_client_publish(client, msg.topic, msg.payload, 0, msg.qos, 0);
             if(ret < 0){
                 ESP_LOGE(TAG, "Failed to publish message to topic: %s", msg.topic);
-            } else {
-                ESP_LOGI(TAG, "Message routed to publishing successfully");
+            }
+            else if (ret == 0) {
+                ESP_LOGI(TAG, "Message with QoS 0 published without confirmation");
+            }
+            else {
+                ESP_LOGI(TAG, "Message %d routed to publishing successfully", ret);
                 xEventGroupWaitBits(mqtt_connection_event_group, MQTT_CONNECTION_PUBLISH_EVENT_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
                 ESP_LOGI(TAG, "Message published successfully to topic: %s", msg.topic);
+                xEventGroupClearBits(mqtt_connection_event_group, MQTT_CONNECTION_PUBLISH_EVENT_BIT);
             }
         } else {
             ESP_LOGE(TAG, "Failed to receive message from queue");
@@ -217,7 +222,7 @@ void mqtt_connection_start_task(void){
     xTaskCreate(mqtt_connection_task, MQTT_CONNECTION_TASK_NAME, MQTT_CONNECTION_STACK_SIZE, NULL, MQTT_CONNECTION_TASK_PRIORITY, &mqtt_connection_task_handle);
 }
 
-bool mqtt_connection_put_publish_queue(struct mqtt_connection_message_t *msg){
+esp_err_t mqtt_connection_put_publish_queue(struct mqtt_connection_message_t *msg){
     BaseType_t ret = pdFALSE;
     if(mqtt_connection_message_queue != NULL){
         ret = xQueueSend(mqtt_connection_message_queue, msg, 0);
@@ -225,5 +230,5 @@ bool mqtt_connection_put_publish_queue(struct mqtt_connection_message_t *msg){
         ESP_LOGE(TAG, "MQTT connection message queue is NULL");
     }
 
-    return ret == pdTRUE;
+    return ret == pdTRUE ? ESP_OK : ESP_FAIL;
 }

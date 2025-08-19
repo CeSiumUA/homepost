@@ -6,16 +6,18 @@
 	],
 	"settings": {
 		"files.associations": {
+			"*.dbclient-js": "javascript",
 			"*.sqlbook": "sql",
 			"*.ndjson": "jsonl",
-			"*.dbclient-js": "javascript",
 			"bt_scanner.h": "c",
 			"ble_scanner.h": "c",
 			"random": "c",
 			"http_server.h": "c",
 			"mqtt_connection.h": "c",
 			"internal_storage.h": "c",
-			"esp_event.h": "c"
+			"esp_event.h": "c",
+			"semphr.h": "c",
+			"mqtt_client.h": "c"
 		}
 	}
 }

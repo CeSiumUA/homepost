@@ -3,20 +3,21 @@
 #include "tracker_scanner.h"
 #include "wifi.h"
 #include "http_server.h"
+#include "geiger_counter.h"
 #include "esp_log.h"
 #include <esp_timer.h>
 
-static void wifi_reconnection_timber_cb(void *arg);
+static void wifi_reconnection_timer_cb(void *arg);
 
 static esp_timer_handle_t wifi_reconnection_timer;
 
 static const esp_timer_create_args_t wifi_reconnection_timer_args = {
-    .callback = &wifi_reconnection_timber_cb,
+    .callback = &wifi_reconnection_timer_cb,
 };
 
 static const char *TAG = __FILE__;
 
-static void wifi_reconnection_timber_cb(void *arg)
+static void wifi_reconnection_timer_cb(void *arg)
 {
     bool reconnection_succeeded = false;
     reconnection_succeeded = wifi_connect_sta(false);
@@ -58,4 +59,5 @@ void app_main(void)
 
     tracker_scanner_start_task();
     mqtt_connection_start_task();
+    geiger_counter_start();
 }
