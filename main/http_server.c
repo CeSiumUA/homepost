@@ -26,6 +26,75 @@ static void http_server_restart_timer_callback(void *arg)
     esp_restart();
 }
 
+static esp_err_t configure_mqtt_post_handler(httpd_req_t *req)
+{
+    char buff[200];
+    int ret, remaining = req->content_len;
+    if (remaining >= sizeof(buff)) {
+        // Respond with 500 Internal Server Error
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Content too long");
+        return ESP_FAIL;
+    }
+
+    while (remaining > 0) {
+        ret = httpd_req_recv(req, buff, MIN(remaining, sizeof(buff)));
+        if (ret <= 0) {
+            if (ret == HTTPD_SOCK_ERR_TIMEOUT) {
+                // Retry receiving if timeout occurred
+                continue;
+            }
+            // Respond with 500 Internal Server Error
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to receive data");
+            return ESP_FAIL;
+        }
+        remaining -= ret;
+    }
+    buff[req->content_len] = '\0';
+    ESP_LOGI(TAG, "Received data: %s", buff);
+
+    char *mqtt_server = strstr(buff, "mqtt-server=");
+    char *mqtt_port = strstr(buff, "mqtt-port=");
+    char *mqtt_client_id = strstr(buff, "mqtt-client-id=");
+    char *mqtt_user = strstr(buff, "mqtt-username=");
+    char *mqtt_password = strstr(buff, "mqtt-password=");
+    if(mqtt_server == NULL || mqtt_port == NULL || mqtt_client_id == NULL || mqtt_user == NULL || mqtt_password == NULL){
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid request");
+        return ESP_FAIL;
+    }
+
+    mqtt_server += strlen("mqtt-server=");
+    mqtt_port += strlen("mqtt-port=");
+    mqtt_client_id += strlen("mqtt-client-id=");
+    mqtt_user += strlen("mqtt-username=");
+    mqtt_password += strlen("mqtt-password=");
+
+    char *mqtt_server_end = strstr(mqtt_server, "&");
+    char *mqtt_port_end = strstr(mqtt_port, "&");
+    char *mqtt_client_id_end = strstr(mqtt_client_id, "&");
+    char *mqtt_user_end = strstr(mqtt_user, "&");
+
+    if (mqtt_server_end == NULL || mqtt_port_end == NULL || mqtt_client_id_end == NULL || mqtt_user_end == NULL){
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid request");
+        return ESP_FAIL;
+    }
+
+    *mqtt_server_end = '\0';
+    *mqtt_port_end = '\0';
+    *mqtt_client_id_end = '\0';
+    *mqtt_user_end = '\0';
+
+    ESP_ERROR_CHECK(internal_storage_save_mqtt_broker(mqtt_server));
+    ESP_ERROR_CHECK(internal_storage_save_mqtt_port(atoi(mqtt_port)));
+    ESP_ERROR_CHECK(internal_storage_save_mqtt_client_id(mqtt_client_id));
+    ESP_ERROR_CHECK(internal_storage_save_mqtt_username(mqtt_user));
+    ESP_ERROR_CHECK(internal_storage_save_mqtt_password(mqtt_password));
+
+    mqtt_connection_start_task();
+    ESP_LOGI(TAG, "MQTT connection started successfully");
+
+    return ESP_OK;
+}
+
 static esp_err_t configure_wifi_post_handler(httpd_req_t *req)
 {
     char buf[100];
@@ -102,9 +171,15 @@ static const httpd_uri_t root = {
 };
 
 static const httpd_uri_t configure_wifi = {
-    .uri       = "/configure_wifi",
+    .uri       = "/wifi-setup",
     .method    = HTTP_POST,
     .handler   = configure_wifi_post_handler
+};
+
+static const httpd_uri_t configure_mqtt = {
+    .uri       = "/mqtt-setup",
+    .method    = HTTP_POST,
+    .handler   = configure_mqtt_post_handler
 };
 
 static httpd_handle_t start_webserver(void)
@@ -141,6 +216,7 @@ static httpd_handle_t start_webserver(void)
     ESP_LOGI(TAG, "Registering URI handlers");
     httpd_register_uri_handler(http_server, &root);
     httpd_register_uri_handler(http_server, &configure_wifi);
+    httpd_register_uri_handler(http_server, &configure_mqtt);
     return http_server;
 }
 

@@ -40,6 +40,48 @@ menu "homepost configuration"
             default "wifi_crds"
             help
                 Key used to store the WiFi credentials in the NVS storage.
+
+        config HOMEPOST_BEACON_PUBLISH_INTERVAL_STORAGE_KEY
+            string "Beacon Publish Interval Storage Key"
+            default "beacon_pub_int"
+            help
+                Key used to store the Beacon Publish Interval in the NVS storage.
+
+        config HOMEPOST_MQTT_CLIENT_ID_STORAGE_KEY
+            string "MQTT Client ID Storage Key"
+            default "mqtt_cl_id"
+            help
+                Key used to store the MQTT Client ID in the NVS storage.
+
+        config HOMEPOST_MQTT_BROKER_STORAGE_KEY
+            string "Token Storage Key"
+            default "mqtt_brkr"
+            help
+                Key used to store the MQTT Broker in the NVS storage.
+
+        config HOMEPOST_MQTT_PORT_STORAGE_KEY
+            string "MQTT Port Storage Key"
+            default "mqtt_port"
+            help
+                Key used to store the MQTT Port in the NVS storage.
+
+        config HOMEPOST_MQTT_TOPIC_STORAGE_KEY
+            string "MQTT Topic Storage Key"
+            default "mqtt_topic"
+            help
+                Key used to store the MQTT Topic in the NVS storage.
+
+        config HOMEPOST_MQTT_USERNAME_STORAGE_KEY
+            string "MQTT Username Storage Key"
+            default "mqtt_usr"
+            help
+                Key used to store the MQTT Username in the NVS storage.
+
+        config HOMEPOST_MQTT_PASSWORD_STORAGE_KEY
+            string "MQTT Password Storage Key"
+            default "mqtt_pwd"
+            help
+                Key used to store the MQTT Password in the NVS storage.
     endmenu
 
     menu "WiFi Configuration"
@@ -79,6 +121,14 @@ menu "homepost configuration"
             default 5
             help
                 Maximum number of retries to connect to the WiFi network.
+
+        config HOMEPOST_WIFI_RECONNECTION_TIMER_PERIOD_US
+            int "WiFi Reconnection Timer Period (us)"
+            default 180000000
+            help
+                Period of the reconnection timer in microseconds.
+                This is the time between reconnection attempts.
+                The default value is 60 seconds.
     endmenu
 
     menu "HTTP Server Configuration"
@@ -93,5 +143,31 @@ menu "homepost configuration"
             default 3000000
             help
                 Restart delay in microseconds.
+    endmenu
+
+    menu "MQTT Configuration"
+        config HOMEPOST_MQTT_BROKER
+            string "MQTT Broker"
+            default "mqtt.eclipse.org"
+            help
+                MQTT broker to connect to.
+
+        config HOMEPOST_MQTT_PORT
+            int "MQTT Port"
+            default 1883
+            help
+                MQTT port to connect to.
+
+        config HOMEPOST_MQTT_TOPIC
+            string "MQTT Topic"
+            default "homepost"
+            help
+                MQTT topic to publish to.
+
+        config HOMEPOST_MQTT_PUBLISH_QUEUE_SIZE
+            int "MQTT Publish Queue Size"
+            default 10
+            help
+                Size of the MQTT publish queue.
     endmenu
 endmenu
