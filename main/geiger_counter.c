@@ -26,7 +26,7 @@ static gpio_config_t io_config = {
     .mode = GPIO_MODE_INPUT,
     .pin_bit_mask = GPIO_CPM_INPUT_PIN,
     .pull_down_en = GPIO_PULLDOWN_DISABLE,
-    .pull_up_en = GPIO_PULLUP_ENABLE
+    .pull_up_en = GPIO_PULLUP_DISABLE
 };
 
 static esp_timer_handle_t geiger_counter_timer;
@@ -53,8 +53,8 @@ static void geiger_counter_timer_cb(void *arg)
 {
     uint32_t cpm = 0;
     uint32_t cpm_sum = 0;
-    uint32_t average_cpm = 0;
-    uint32_t average_usvh = 0;
+    float average_cpm = 0;
+    float average_usvh = 0;
     int ret;
 
     taskENTER_CRITICAL(&gpio_spinlock);
@@ -73,12 +73,12 @@ static void geiger_counter_timer_cb(void *arg)
     }
 
     average_cpm = cpm_sum / (cpm_history_full ? CONFIG_HOMEPOST_GEIGER_COUNTER_CPM_HISTORY_DEPTH : cpm_index);
-    average_usvh = (uint32_t)(average_cpm * GEIGER_COUNTER_CONVERSION_FACTOR);
+    average_usvh = average_cpm * GEIGER_COUNTER_CONVERSION_FACTOR;
 
-    ESP_LOGI(TAG, "Average CPM: %lu, Average uSv/h: %lu", average_cpm, average_usvh);
+    ESP_LOGI(TAG, "Average CPM: %f, Average uSv/h: %f", average_cpm, average_usvh);
 
     memset(radiation_payload, 0, sizeof(radiation_payload));
-    ret = snprintf(radiation_payload, sizeof(radiation_payload), "{\"radiation\": %lu}", average_usvh);
+    ret = snprintf(radiation_payload, sizeof(radiation_payload), "{\"radiation\": %.3f}", average_usvh);
     if (ret < 0 || ret >= sizeof(radiation_payload)) {
         ESP_LOGE(TAG, "Failed to create radiation payload");
         return;
