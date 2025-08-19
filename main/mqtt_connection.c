@@ -62,6 +62,8 @@ static esp_err_t mqtt_connection_start(void){
     uint16_t mqtt_port = 0;
     char mqtt_username[64] = {0};
     char mqtt_password[64] = {0};
+    char mqtt_client_id[64] = {0};
+    char mqtt_broker_full_uri[128] = {0};
 
     mqtt_broker_connection_allowed &= internal_storage_check_mqtt_broker_preserved();
     mqtt_broker_connection_allowed &= internal_storage_check_mqtt_port_preserved();
@@ -78,18 +80,22 @@ static esp_err_t mqtt_connection_start(void){
     ESP_ERROR_CHECK(internal_storage_get_mqtt_port(&mqtt_port));
     ESP_ERROR_CHECK(internal_storage_get_mqtt_username(mqtt_username));
     ESP_ERROR_CHECK(internal_storage_get_mqtt_password(mqtt_password));
+    ESP_ERROR_CHECK(internal_storage_get_mqtt_client_id(mqtt_client_id));
+
+    snprintf(mqtt_broker_full_uri, sizeof(mqtt_broker_full_uri), "mqtt://%s", mqtt_broker);
 
     ESP_LOGD(TAG, "MQTT broker: %s:%d", mqtt_broker, mqtt_port);
     ESP_LOGD(TAG, "MQTT username: %s", mqtt_username);
+    ESP_LOGD(TAG, "MQTT client ID: %s", mqtt_client_id);
 
     const esp_mqtt_client_config_t mqtt_config = {
         .broker = {
-            .address.uri = mqtt_broker,
+            .address.uri = mqtt_broker_full_uri,
             .address.port = mqtt_port
         },
         .credentials = {
             .username = mqtt_username,
-            .client_id = NULL,
+            .client_id = mqtt_client_id,
             .authentication.password = mqtt_password,
         },
     };

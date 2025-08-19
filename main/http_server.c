@@ -54,33 +54,38 @@ static esp_err_t configure_mqtt_post_handler(httpd_req_t *req)
 
     char *mqtt_server = strstr(buff, "mqtt-server=");
     char *mqtt_port = strstr(buff, "mqtt-port=");
+    char *mqtt_client_id = strstr(buff, "mqtt-client-id=");
     char *mqtt_user = strstr(buff, "mqtt-username=");
     char *mqtt_password = strstr(buff, "mqtt-password=");
-    if(mqtt_server == NULL || mqtt_port == NULL || mqtt_user == NULL || mqtt_password == NULL){
+    if(mqtt_server == NULL || mqtt_port == NULL || mqtt_client_id == NULL || mqtt_user == NULL || mqtt_password == NULL){
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid request");
         return ESP_FAIL;
     }
 
     mqtt_server += strlen("mqtt-server=");
     mqtt_port += strlen("mqtt-port=");
+    mqtt_client_id += strlen("mqtt-client-id=");
     mqtt_user += strlen("mqtt-username=");
     mqtt_password += strlen("mqtt-password=");
 
     char *mqtt_server_end = strstr(mqtt_server, "&");
     char *mqtt_port_end = strstr(mqtt_port, "&");
+    char *mqtt_client_id_end = strstr(mqtt_client_id, "&");
     char *mqtt_user_end = strstr(mqtt_user, "&");
 
-    if (mqtt_server_end == NULL || mqtt_port_end == NULL || mqtt_user_end == NULL){
+    if (mqtt_server_end == NULL || mqtt_port_end == NULL || mqtt_client_id_end == NULL || mqtt_user_end == NULL){
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid request");
         return ESP_FAIL;
     }
 
     *mqtt_server_end = '\0';
     *mqtt_port_end = '\0';
+    *mqtt_client_id_end = '\0';
     *mqtt_user_end = '\0';
 
     ESP_ERROR_CHECK(internal_storage_save_mqtt_broker(mqtt_server));
     ESP_ERROR_CHECK(internal_storage_save_mqtt_port(atoi(mqtt_port)));
+    ESP_ERROR_CHECK(internal_storage_save_mqtt_client_id(mqtt_client_id));
     ESP_ERROR_CHECK(internal_storage_save_mqtt_username(mqtt_user));
     ESP_ERROR_CHECK(internal_storage_save_mqtt_password(mqtt_password));
 

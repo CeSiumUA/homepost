@@ -57,4 +57,5 @@ void app_main(void)
     http_server_start();
 
     tracker_scanner_start_task();
+    mqtt_connection_start_task();
 }
