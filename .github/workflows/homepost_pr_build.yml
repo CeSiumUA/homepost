@@ -27,4 +27,4 @@ jobs:
         esp_idf_version: v5.3
         target: esp32
         path: '.'
-        extra_docker_args: --name ${{ env.CONTAINER_NAME }}
+        extra_docker_args: --rm --name ${{ env.CONTAINER_NAME }}
