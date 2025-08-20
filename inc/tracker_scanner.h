@@ -7,6 +7,7 @@
 #include "esp_err.h"
 #include "ble_scanner.h"
 #include "ble_ibeacon.h"
+#include "mqtt_connection.h"
 
 void tracker_scanner_start_task(void);
 

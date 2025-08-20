@@ -14,7 +14,7 @@ static void geiger_counter_timer_cb(void *arg);
 
 static char radiation_payload[32];
 static struct mqtt_connection_message_t radiation_message = {
-    .topic = "living_room/radiation",
+    .topic = CONFIG_HOMEPOST_MQTT_TOPIC "/radiation",
     .payload = radiation_payload,
     .qos = 0
 };
