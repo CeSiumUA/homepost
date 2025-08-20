@@ -32,6 +32,10 @@ menu "homepost configuration"
         config HOMEPOST_SCAN_MINOR_FILTER
             int "Minor filter"
             default 40004
+
+        config HOMEPOST_SCAN_TIMEOUT_MINUTES
+            int "Scan timeout (minutes)"
+            default 2
     endmenu
 
     menu "Storage Configuration"

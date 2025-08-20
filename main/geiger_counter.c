@@ -12,9 +12,9 @@ static portMUX_TYPE gpio_spinlock = portMUX_INITIALIZER_UNLOCKED;
 
 static void geiger_counter_timer_cb(void *arg);
 
-static char radiation_payload[64];
+static char radiation_payload[32];
 static struct mqtt_connection_message_t radiation_message = {
-    .topic = "ha/radiation",
+    .topic = CONFIG_HOMEPOST_MQTT_TOPIC "/radiation",
     .payload = radiation_payload,
     .qos = 0
 };
