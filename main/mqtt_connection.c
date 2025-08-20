@@ -1,7 +1,7 @@
 #include "mqtt_connection.h"
 
 #define MQTT_CONNECTION_TASK_PRIORITY                       7
-#define MQTT_CONNECTION_STACK_SIZE                          4096
+#define MQTT_CONNECTION_STACK_SIZE                          3072
 #define MQTT_CONNECTION_TASK_NAME                           "mqtt_conn"
 #define MQTT_CONNECTION_CONNECTED_EVENT_BIT                 BIT0
 #define MQTT_CONNECTION_CONNECTION_ERROR_EVENT_BIT          BIT1

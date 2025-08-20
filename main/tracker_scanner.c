@@ -3,7 +3,7 @@
 #include "freertos/task.h"
 
 #define TRACKER_SCANNER_TASK_PRIORITY           6
-#define TRACKER_SCANNER_TASK_STACK_SIZE         4096
+#define TRACKER_SCANNER_TASK_STACK_SIZE         2048
 #define TRACKER_SCANNER_TASK_NAME               "scanner"
 #define TRACKER_SCANNER_EVENT_BIT               BIT0
 #define TRACKER_SCANNER_SCAN_TIMEOUT            pdMS_TO_TICKS(5 * 60 * 1000)
