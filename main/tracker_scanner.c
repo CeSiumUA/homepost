@@ -6,7 +6,7 @@
 #define TRACKER_SCANNER_TASK_STACK_SIZE         2048
 #define TRACKER_SCANNER_TASK_NAME               "scanner"
 #define TRACKER_SCANNER_EVENT_BIT               BIT0
-#define TRACKER_SCANNER_SCAN_TIMEOUT            pdMS_TO_TICKS(1 * 60 * 1000)
+#define TRACKER_SCANNER_SCAN_TIMEOUT            pdMS_TO_TICKS(CONFIG_HOMEPOST_SCAN_TIMEOUT_MINUTES * 60 * 1000)
 
 static const char *TAG = __FILE__;
 static EventGroupHandle_t tracker_scanner_event_group;
