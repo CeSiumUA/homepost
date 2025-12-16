@@ -24,7 +24,7 @@ jobs:
     - name: esp-idf build
       uses: espressif/esp-idf-ci-action@v1
       with:
-        esp_idf_version: v5.3
+        esp_idf_version: v5.5.1
         target: esp32
         path: '.'
         extra_docker_args: --rm --name ${{ env.CONTAINER_NAME }}
