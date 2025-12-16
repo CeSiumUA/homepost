@@ -136,7 +136,7 @@ homepost/
 ### BLE Scanning Not Working
 - Verify the iBeacon major/minor IDs match your tracking device
 - Check RSSI threshold if filtering is enabled
-- Ensure Bluetooth (BLE Transmitter) is enabled on the tracking device
+- Ensure Bluetooth (BLE advertising) is enabled on the tracking device
 
 ## License
 
