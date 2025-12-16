@@ -6,7 +6,7 @@ Homepost is an ESP32-based home monitoring and automation hub that combines BLE 
 
 - **BLE iBeacon Tracking**: Detects and tracks iBeacon devices for presence detection (e.g., phone tracking)
 - **Geiger Counter Integration**: Monitors radiation levels and publishes data via MQTT
-- **WiFi Connectivity**: 
+- **WiFi Connectivity**:
   - Station mode for connecting to existing networks
   - SoftAP mode for initial configuration
   - Automatic reconnection with configurable retry intervals
@@ -31,6 +31,7 @@ Homepost is an ESP32-based home monitoring and automation hub that combines BLE 
 
 1. Install ESP-IDF following the [official installation guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html)
 2. Set up the ESP-IDF environment:
+
    ```bash
    . $HOME/esp/esp-idf/export.sh
    ```
@@ -38,11 +39,13 @@ Homepost is an ESP32-based home monitoring and automation hub that combines BLE 
 ### Configure
 
 Configure the project using menuconfig:
+
 ```bash
 idf.py menuconfig
 ```
 
 Navigate to `homepost configuration` to customize:
+
 - **BT Options**: Bluetooth device name, inquiry length
 - **Scanner Options**: RSSI filters, iBeacon major/minor IDs, scan timeout
 - **WiFi Configuration**: SoftAP credentials, reconnection settings
@@ -52,6 +55,7 @@ Navigate to `homepost configuration` to customize:
 ### Build
 
 Build the project:
+
 ```bash
 idf.py build
 ```
@@ -59,19 +63,23 @@ idf.py build
 ### Flash
 
 Flash the firmware to your ESP32:
+
 ```bash
 idf.py -p PORT flash
 ```
+
 Replace `PORT` with your ESP32's serial port (e.g., `COM3` on Windows or `/dev/ttyUSB0` on Linux).
 
 ### Monitor
 
 View the serial output:
+
 ```bash
 idf.py -p PORT monitor
 ```
 
 Or combine flash and monitor:
+
 ```bash
 idf.py -p PORT flash monitor
 ```
@@ -91,6 +99,7 @@ idf.py -p PORT flash monitor
 ### iBeacon Tracking
 
 Configure the iBeacon major and minor IDs to match the devices you want to track:
+
 - `HOMEPOST_SCAN_MAJOR_FILTER`: Major ID (default: 100)
 - `HOMEPOST_SCAN_MINOR_FILTER`: Minor ID (default: 40004)
 - `HOMEPOST_SCAN_TIMEOUT_MINUTES`: How long to wait before marking device as absent (default: 2 minutes)
@@ -98,12 +107,13 @@ Configure the iBeacon major and minor IDs to match the devices you want to track
 ### MQTT Topics
 
 The device publishes to topics under the configured base topic:
+
 - `{topic}/phone_present`: Presence detection status
 - Additional topics for geiger counter data
 
 ## Project Structure
 
-```
+``` с
 homepost/
 ├── CMakeLists.txt              # Project configuration
 ├── sdkconfig                   # Build configuration
@@ -124,16 +134,19 @@ homepost/
 ## Troubleshooting
 
 ### WiFi Connection Issues
+
 - Check the serial monitor for connection status
 - Verify credentials are correct via the web interface
 - The device will retry connection every 3 minutes by default
 
 ### MQTT Connection Problems
+
 - Verify broker address and port are correct
 - Check firewall settings on the broker
 - Ensure credentials (if required) are properly configured
 
 ### BLE Scanning Not Working
+
 - Verify the iBeacon major/minor IDs match your tracking device
 - Check RSSI threshold if filtering is enabled
 - Ensure Bluetooth (BLE Transmitter) is enabled on the tracking device
