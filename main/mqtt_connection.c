@@ -57,7 +57,6 @@ static void mqtt_connection_event_handler(void *handler_args, esp_event_base_t b
 
 static esp_err_t mqtt_connection_start(void){
     bool mqtt_broker_connection_allowed = true;
-    EventBits_t bits = 0;
     char mqtt_broker[100] = {0};
     uint16_t mqtt_port = 0;
     char mqtt_username[64] = {0};
@@ -111,12 +110,7 @@ static esp_err_t mqtt_connection_start(void){
 
     ESP_LOGI(TAG, "MQTT client started successfully, connecting...");
 
-    bits = xEventGroupWaitBits(mqtt_connection_event_group, MQTT_CONNECTION_CONNECTED_EVENT_BIT | MQTT_CONNECTION_CONNECTION_ERROR_EVENT_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
-
-    if(bits & MQTT_CONNECTION_CONNECTION_ERROR_EVENT_BIT){
-        ESP_LOGE(TAG, "MQTT connection error event received");
-        return ESP_FAIL;
-    }
+    xEventGroupWaitBits(mqtt_connection_event_group, MQTT_CONNECTION_CONNECTED_EVENT_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
 
     ESP_LOGI(TAG, "MQTT client connected successfully");
 
