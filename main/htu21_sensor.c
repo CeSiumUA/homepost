@@ -89,6 +89,7 @@ static void htu21_timer_cb(void *arg)
 
     ret = htu21_read_temperature(&temperature);
     if (ret == ESP_OK) {
+        ESP_LOGI(TAG, "Temperature: %.2f C", temperature);
         memset(temperature_payload, 0, sizeof(temperature_payload));
         int len = snprintf(temperature_payload, sizeof(temperature_payload), 
                           "{\"temperature\": %.2f}", temperature);
@@ -105,6 +106,7 @@ static void htu21_timer_cb(void *arg)
 
     ret = htu21_read_humidity(&humidity);
     if (ret == ESP_OK) {
+        ESP_LOGI(TAG, "Humidity: %.2f %%", humidity);
         memset(humidity_payload, 0, sizeof(humidity_payload));
         int len = snprintf(humidity_payload, sizeof(humidity_payload), 
                           "{\"humidity\": %.2f}", humidity);
@@ -145,6 +147,10 @@ void htu21_sensor_start(void)
 {
     esp_err_t ret;
 
+    ESP_LOGI(TAG, "Starting HTU21 sensor on I2C bus (SDA: %d, SCL: %d, freq: %d Hz)",
+             CONFIG_HOMEPOST_HTU21_I2C_SDA_GPIO, CONFIG_HOMEPOST_HTU21_I2C_SCL_GPIO,
+             CONFIG_HOMEPOST_HTU21_I2C_FREQ_HZ);
+
     i2c_master_bus_config_t bus_config = {
         .i2c_port = I2C_NUM_0,
         .sda_io_num = CONFIG_HOMEPOST_HTU21_I2C_SDA_GPIO,
@@ -172,6 +178,7 @@ void htu21_sensor_start(void)
         i2c_del_master_bus(i2c_bus_handle);
         return;
     }
+    ESP_LOGI(TAG, "HTU21 device added to I2C bus at address 0x%02X", HTU21_I2C_ADDR);
 
     ret = htu21_init();
     if (ret != ESP_OK) {
@@ -195,5 +202,5 @@ void htu21_sensor_start(void)
         return;
     }
 
-    ESP_LOGI(TAG, "HTU21 sensor started successfully");
+    ESP_LOGI(TAG, "HTU21 sensor started successfully (polling interval: %d ms)", CONFIG_HOMEPOST_HTU21_TIMER_PERIOD_MS);
 }
