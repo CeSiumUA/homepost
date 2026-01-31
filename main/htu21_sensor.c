@@ -10,6 +10,8 @@
 #define HTU21_I2C_ADDR                  0x40
 #define HTU21_CMD_TEMP_HOLD             0xE3
 #define HTU21_CMD_HUMIDITY_HOLD         0xE5
+#define HTU21_CMD_TEMP_NOHOLD           0xF3
+#define HTU21_CMD_HUMIDITY_NOHOLD       0xF5
 #define HTU21_CMD_SOFT_RESET            0xFE
 
 static const char *TAG = __FILE__;
@@ -36,8 +38,8 @@ static struct mqtt_connection_message_t humidity_message = {
 
 static esp_err_t htu21_read_temperature(float *temperature)
 {
-    uint8_t cmd = HTU21_CMD_TEMP_HOLD;
-    uint8_t data[3];
+    uint8_t cmd = HTU21_CMD_TEMP_NOHOLD;
+    uint8_t data[2];
     esp_err_t ret;
 
     ret = i2c_master_transmit(htu21_dev_handle, &cmd, 1, 1000);
@@ -46,7 +48,9 @@ static esp_err_t htu21_read_temperature(float *temperature)
         return ret;
     }
 
-    ret = i2c_master_receive(htu21_dev_handle, data, 3, 1000);
+    vTaskDelay(pdMS_TO_TICKS(85));
+
+    ret = i2c_master_receive(htu21_dev_handle, data, sizeof(data), 1000);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to receive temperature data: %s", esp_err_to_name(ret));
         return ret;
@@ -60,8 +64,8 @@ static esp_err_t htu21_read_temperature(float *temperature)
 
 static esp_err_t htu21_read_humidity(float *humidity)
 {
-    uint8_t cmd = HTU21_CMD_HUMIDITY_HOLD;
-    uint8_t data[3];
+    uint8_t cmd = HTU21_CMD_HUMIDITY_NOHOLD;
+    uint8_t data[2];
     esp_err_t ret;
 
     ret = i2c_master_transmit(htu21_dev_handle, &cmd, 1, 1000);
@@ -70,7 +74,9 @@ static esp_err_t htu21_read_humidity(float *humidity)
         return ret;
     }
 
-    ret = i2c_master_receive(htu21_dev_handle, data, 3, 1000);
+    vTaskDelay(pdMS_TO_TICKS(50));
+
+    ret = i2c_master_receive(htu21_dev_handle, data, sizeof(data), 1000);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to receive humidity data: %s", esp_err_to_name(ret));
         return ret;
