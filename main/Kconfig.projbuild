@@ -195,4 +195,32 @@ menu "homepost configuration"
             help
                 Conversion factor to convert counts to CPM.
     endmenu
+
+    menu "HTU21 Sensor Configuration"
+        config HOMEPOST_HTU21_TIMER_PERIOD_MS
+            int "HTU21 Reading Period (ms)"
+            default 60000
+            help
+                Period between temperature and humidity readings in milliseconds.
+                Default is 60000ms (1 minute).
+
+        config HOMEPOST_HTU21_I2C_SDA_GPIO
+            int "I2C SDA GPIO Pin"
+            default 21
+            help
+                GPIO pin for I2C SDA (data line).
+
+        config HOMEPOST_HTU21_I2C_SCL_GPIO
+            int "I2C SCL GPIO Pin"
+            default 22
+            help
+                GPIO pin for I2C SCL (clock line).
+
+        config HOMEPOST_HTU21_I2C_FREQ_HZ
+            int "I2C Clock Frequency (Hz)"
+            default 100000
+            help
+                I2C clock frequency in Hz. HTU21 supports up to 400kHz.
+                Default is 100kHz for better compatibility.
+    endmenu
 endmenu

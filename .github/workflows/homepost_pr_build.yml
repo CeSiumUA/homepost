@@ -13,6 +13,9 @@ jobs:
       CONTAINER_NAME: homepost_container
 
     steps:
+    - name: Clean workspace
+      run: sudo rm -rf ${{ github.workspace }}/* || true
+      
     - name: Checkout repo
       uses: actions/checkout@v2
       with:

@@ -4,6 +4,7 @@
 #include "wifi.h"
 #include "http_server.h"
 #include "geiger_counter.h"
+#include "htu21_sensor.h"
 #include "esp_log.h"
 #include <esp_timer.h>
 
@@ -60,4 +61,5 @@ void app_main(void)
     tracker_scanner_start_task();
     mqtt_connection_start_task();
     geiger_counter_start();
+    htu21_sensor_start();
 }
