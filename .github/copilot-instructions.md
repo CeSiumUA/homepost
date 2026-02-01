@@ -120,3 +120,8 @@ Queue-based async publishing:
 - Task naming: lowercase with underscores, max 16 chars (FreeRTOS limit)
 - No dynamic memory in ISRs - increment counters only
 - Queue depth typically 10 messages for inter-task communication
+
+## Documentation and version handling
+- Always make sure that [README.md](README.md) is up to date with any changes.
+- Always make sure that [copilot-instructions.md](.github/copilot-instructions.md) is up to date with any architectural changes.
+- Always update the version in [sdkconfig](sdkconfig) field CONFIG_APP_PROJECT_VER when making changes that would require a version bump.
