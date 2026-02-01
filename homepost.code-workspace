@@ -24,6 +24,7 @@
 			"crds",
 			"espressif",
 			"ibeacon",
+			"sdkconfig",
 			"TXTFILES"
 		]
 	}

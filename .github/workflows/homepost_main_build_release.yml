@@ -1,0 +1,51 @@
+name: Build a project
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: self-hosted
+
+    env:
+      CONTAINER_NAME: homepost_container
+
+    steps:
+    - name: Pre-cleanup
+      run: docker run --rm -v ${{ github.workspace }}:/workspace alpine sh -c "rm -rf /workspace/*"
+      
+    - name: Checkout repo
+      uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
+
+    - name: Remove old container
+      run: docker rm ${{ env.CONTAINER_NAME }} || true
+
+    - name: esp-idf build
+      uses: espressif/esp-idf-ci-action@v1
+      with:
+        esp_idf_version: v5.5.1
+        target: esp32
+        path: '.'
+        extra_docker_args: --rm --name ${{ env.CONTAINER_NAME }}
+
+    - name: Extract version from sdkconfig
+      id: extract_version
+      run: |
+        version=$(grep '^CONFIG_APP_PROJECT_VER=' sdkconfig | cut -d '"' -f 2)
+        echo "VERSION=$version" >> $GITHUB_ENV
+  
+    - name: Use extracted version as tag name
+      run: echo "Tag name is ${{ env.VERSION }}"
+
+    - name: Rename firmware binary
+      run: cp build/homepost.bin homepost-${{ env.VERSION }}.bin
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: homepost-firmware
+        path: homepost-${{ env.VERSION }}.bin
