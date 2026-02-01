@@ -49,3 +49,34 @@ jobs:
       with:
         name: homepost-firmware
         path: homepost-${{ env.VERSION }}.bin
+
+  release:
+
+    runs-on: ubuntu-latest
+
+    needs: build
+
+    steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: homepost-firmware
+        path: final_build/
+
+    - name: Show file info
+      run: ls -l final_build/
+
+    - name: Get firmware version
+      id: get_version
+      run: |
+        version=$(ls final_build/ | grep -oP 'homepost-\K.*(?=.bin)')
+        echo "VERSION=$version" >> $GITHUB_ENV
+
+    - name: Create release
+      uses: marvinpinto/action-automatic-releases@latest
+      with:
+        repo_token: ${{ secrets.GH_TOKEN }}
+        automatic_release_tag: ${{ env.VERSION }}
+        title: Release ${{ env.VERSION }}
+        files: final_build/homepost-${{ env.VERSION }}.bin
+        prerelease: false
