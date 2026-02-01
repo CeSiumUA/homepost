@@ -1,10 +1,11 @@
 # Homepost
 
-Homepost is an ESP32-based home monitoring and automation hub that combines BLE tracking, radiation monitoring, and MQTT integration into a single device.
+Homepost is an ESP32-based home monitoring and automation hub that combines BLE tracking, environmental sensing, radiation monitoring, and MQTT integration into a single device.
 
 ## Features
 
 - **BLE iBeacon Tracking**: Detects and tracks iBeacon devices for presence detection (e.g., phone tracking)
+- **HTU21 Temperature & Humidity Sensor**: Monitors environmental conditions via I2C and publishes data via MQTT
 - **Geiger Counter Integration**: Monitors radiation levels and publishes data via MQTT
 - **WiFi Connectivity**:
   - Station mode for connecting to existing networks
@@ -17,6 +18,7 @@ Homepost is an ESP32-based home monitoring and automation hub that combines BLE 
 ## Hardware Requirements
 
 - ESP32 development board
+- HTU21D temperature/humidity sensor (I2C, default: SDA=GPIO21, SCL=GPIO22)
 - Geiger counter sensor (connected via GPIO)
 - Power supply (USB or external)
 
@@ -108,8 +110,19 @@ Configure the iBeacon major and minor IDs to match the devices you want to track
 
 The device publishes to topics under the configured base topic:
 
-- `{topic}/phone_present`: Presence detection status
-- Additional topics for geiger counter data
+- `{topic}/phone_present`: Presence detection status (iBeacon tracking)
+- `{topic}/temperature`: Temperature readings in JSON format (`{"temperature": XX.XX}`)
+- `{topic}/humidity`: Humidity readings in JSON format (`{"humidity": XX.XX}`)
+- `{topic}/geiger`: Geiger counter CPM (counts per minute) data
+
+### HTU21 Temperature & Humidity Sensor
+
+Configure the HTU21 sensor via menuconfig:
+
+- `HOMEPOST_HTU21_TIMER_PERIOD_MS`: Reading interval (default: 60000ms / 1 minute)
+- `HOMEPOST_HTU21_I2C_SDA_GPIO`: I2C SDA pin (default: GPIO 21)
+- `HOMEPOST_HTU21_I2C_SCL_GPIO`: I2C SCL pin (default: GPIO 22)
+- `HOMEPOST_HTU21_I2C_FREQ_HZ`: I2C clock frequency (default: 100kHz)
 
 ## Project Structure
 
@@ -125,6 +138,7 @@ homepost/
 │   ├── ble_ibeacon.c           # iBeacon protocol handling
 │   ├── tracker_scanner.c       # Presence tracking logic
 │   ├── geiger_counter.c        # Radiation sensor integration
+│   ├── htu21_sensor.c          # HTU21 temperature/humidity sensor
 │   ├── mqtt_connection.c       # MQTT client
 │   ├── internal_storage.c      # NVS storage management
 │   └── Kconfig.projbuild       # Configuration menu
@@ -150,6 +164,13 @@ homepost/
 - Verify the iBeacon major/minor IDs match your tracking device
 - Check RSSI threshold if filtering is enabled
 - Ensure Bluetooth (BLE advertising) is enabled on the tracking device
+
+### HTU21 Sensor Not Working
+
+- Verify I2C wiring: SDA to GPIO21, SCL to GPIO22 (default pins)
+- Check that the sensor is powered (3.3V)
+- Review serial monitor for I2C initialization errors
+- Ensure no I2C address conflicts (HTU21 uses address 0x40)
 
 ## License
 

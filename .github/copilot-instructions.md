@@ -1,25 +1,26 @@
 # Homepost ESP-IDF Project Instructions
 
 ## Project Overview
-Homepost is an ESP32-based IoT hub combining BLE iBeacon tracking, Geiger counter monitoring, WiFi connectivity, HTTP configuration server, and MQTT publishing. Built with ESP-IDF v4.4+.
+Homepost is an ESP32-based IoT hub combining BLE iBeacon tracking, HTU21 temperature/humidity monitoring, Geiger counter monitoring, WiFi connectivity, HTTP configuration server, and MQTT publishing. Built with ESP-IDF v4.4+.
 
 ## Architecture & Component Structure
 
 ### Component Organization
 - **main/**: Single component containing all application code (not multi-component architecture)
 - **inc/**: Shared headers included via `INCLUDE_DIRS "../inc"` in [main/CMakeLists.txt](main/CMakeLists.txt)
-- Components are individual `.c` files registered in main CMakeLists: `wifi.c`, `http_server.c`, `ble_scanner.c`, `tracker_scanner.c`, `mqtt_connection.c`, `geiger_counter.c`, `internal_storage.c`
+- Components are individual `.c` files registered in main CMakeLists: `wifi.c`, `http_server.c`, `ble_scanner.c`, `tracker_scanner.c`, `mqtt_connection.c`, `geiger_counter.c`, `htu21_sensor.c`, `internal_storage.c`
 
 ### Startup & Initialization Flow ([main/main.c](main/main.c))
 1. NVS storage initialization (`internal_storage_init()`)
 2. WiFi init → STA connection attempt OR SoftAP fallback
 3. Automatic WiFi reconnection via `esp_timer` (3-minute intervals by default)
 4. HTTP server start (always runs for configuration)
-5. Background tasks: `tracker_scanner_start_task()`, `mqtt_connection_start_task()`, `geiger_counter_start()`
+5. Background tasks: `tracker_scanner_start_task()`, `mqtt_connection_start_task()`, `geiger_counter_start()`, `htu21_sensor_start()`
 
 ### Key Data Flows
 - **BLE → MQTT**: `ble_scanner.c` → `tracker_scanner.c` (FreeRTOS EventGroup) → MQTT queue → `mqtt_connection.c`
 - **Geiger → MQTT**: GPIO ISR increments counter → timer callback calculates CPM → MQTT queue
+- **HTU21 → MQTT**: `htu21_sensor.c` reads I2C sensor via `esp_timer` callback → publishes temperature/humidity JSON to MQTT queue
 - **HTTP → NVS → Actions**: Web form → parse POST data → save to NVS → trigger WiFi/MQTT connection
 
 ## ESP-IDF Specific Patterns
