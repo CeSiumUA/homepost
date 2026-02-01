@@ -13,8 +13,8 @@ jobs:
       CONTAINER_NAME: homepost_container
 
     steps:
-    - name: Clean workspace
-      run: sudo rm -rf ${{ github.workspace }}/* || true
+    - name: Pre-cleanup
+      run: docker run --rm -v ${{ github.workspace }}:/workspace alpine sh -c "rm -rf /workspace/*"
       
     - name: Checkout repo
       uses: actions/checkout@v2
