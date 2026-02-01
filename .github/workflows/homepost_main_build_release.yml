@@ -76,7 +76,7 @@ jobs:
       uses: marvinpinto/action-automatic-releases@latest
       with:
         repo_token: ${{ secrets.GH_TOKEN }}
-        automatic_release_tag: ${{ env.VERSION }}
-        title: Release ${{ env.VERSION }}
+        automatic_release_tag: release-v${{ env.VERSION }}
+        title: Release v${{ env.VERSION }}
         files: final_build/homepost-${{ env.VERSION }}.bin
         prerelease: false
