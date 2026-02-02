@@ -85,6 +85,19 @@ Queue-based async publishing:
 - Filters by major/minor IDs from Kconfig
 - Presence = iBeacon seen within timeout window (default 2 min)
 - Uses event bits to signal detection, timeout determines "lost" state
+- Can be stopped via `tracker_scanner_stop_task()` to free memory for OTA updates
+
+### OTA Update System ([main/ota_update.c](main/ota_update.c))
+- Checks GitHub releases API: `https://api.github.com/repos/{owner}/{repo}/releases/latest`
+- Parses `tag_name` format `release-v{version}` to extract semver (e.g., `release-v1.2.0` → `1.2.0`)
+- Looks for firmware asset named `homepost-{version}.bin`
+- Compares versions against `CONFIG_APP_PROJECT_VER`
+- Before OTA: stops BLE tracking (`tracker_scanner_stop_task()`) to free heap (~50KB needed)
+- Uses `esp_https_ota()` with `esp_crt_bundle_attach()` for GitHub's CA chain
+- On success: `esp_restart()` to boot new firmware
+- EventGroup-based manual trigger via `OTA_UPDATE_CHECK_NOW_BIT`
+- HTTP endpoints: `GET /check-update` (JSON status), `POST /trigger-update` (manual update)
+- Requires OTA-compatible partition table (`CONFIG_PARTITION_TABLE_TWO_OTA`)
 
 ## Common Development Tasks
 

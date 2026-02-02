@@ -8,6 +8,10 @@
 #include "esp_log.h"
 #include <esp_timer.h>
 
+#if CONFIG_HOMEPOST_OTA_ENABLED
+#include "ota_update.h"
+#endif
+
 static void wifi_reconnection_timer_cb(void *arg);
 
 static esp_timer_handle_t wifi_reconnection_timer;
@@ -62,4 +66,8 @@ void app_main(void)
     mqtt_connection_start_task();
     geiger_counter_start();
     htu21_sensor_start();
+
+#if CONFIG_HOMEPOST_OTA_ENABLED
+    ota_update_start_task();
+#endif
 }

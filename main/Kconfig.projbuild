@@ -223,4 +223,44 @@ menu "homepost configuration"
                 I2C clock frequency in Hz. HTU21 supports up to 400kHz.
                 Default is 100kHz for better compatibility.
     endmenu
+
+    menu "OTA Update Configuration"
+        config HOMEPOST_OTA_ENABLED
+            bool "Enable OTA Updates"
+            default y
+            help
+                Enable automatic OTA firmware updates from GitHub releases.
+
+        config HOMEPOST_OTA_GITHUB_OWNER
+            string "GitHub Repository Owner"
+            default "CeSiumUA"
+            depends on HOMEPOST_OTA_ENABLED
+            help
+                GitHub username or organization that owns the repository.
+
+        config HOMEPOST_OTA_GITHUB_REPO
+            string "GitHub Repository Name"
+            default "homepost"
+            depends on HOMEPOST_OTA_ENABLED
+            help
+                Name of the GitHub repository containing firmware releases.
+
+        config HOMEPOST_OTA_CHECK_INTERVAL_HOURS
+            int "OTA Check Interval (hours)"
+            default 4
+            range 1 168
+            depends on HOMEPOST_OTA_ENABLED
+            help
+                How often to check for firmware updates (in hours).
+                Default is 4 hours. Range: 1-168 (1 week).
+
+        config HOMEPOST_OTA_INITIAL_DELAY_SECONDS
+            int "Initial Delay Before First Check (seconds)"
+            default 30
+            range 10 300
+            depends on HOMEPOST_OTA_ENABLED
+            help
+                Delay after boot before first update check (in seconds).
+                Allows network to stabilize. Default is 30 seconds.
+    endmenu
 endmenu
