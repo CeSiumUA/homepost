@@ -39,9 +39,55 @@
         .form-container button:hover {
             background-color: #0056b3;
         }
+        .version-info {
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+        .version-info span {
+            font-weight: bold;
+        }
+        .update-available {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .update-status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+        .update-status.success {
+            background-color: #d4edda;
+            color: #155724;
+            display: block;
+        }
+        .update-status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+        .update-status.info {
+            background-color: #cce5ff;
+            color: #004085;
+            display: block;
+        }
     </style>
 </head>
 <body>
+    <div class="form-container">
+        <h2>Firmware Update</h2>
+        <div class="version-info">
+            Current Version: <span id="current-version">Loading...</span>
+        </div>
+        <div class="version-info">
+            Available Version: <span id="available-version">Checking...</span>
+        </div>
+        <button type="button" onclick="checkUpdate()">Check for Updates</button>
+        <button type="button" onclick="triggerUpdate()" id="update-btn" style="display:none; background-color:#28a745;">Install Update</button>
+        <div id="update-status" class="update-status"></div>
+    </div>
+
     <div class="form-container">
         <h2>WiFi Connection</h2>
         <form action="/wifi-setup" method="post">
@@ -76,5 +122,60 @@
             <button type="submit">Connect</button>
         </form>
     </div>
+
+    <script>
+        function checkUpdate() {
+            var statusEl = document.getElementById('update-status');
+            statusEl.className = 'update-status info';
+            statusEl.textContent = 'Checking for updates...';
+            
+            fetch('/check-update')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('current-version').textContent = data.current_version || 'Unknown';
+                    document.getElementById('available-version').textContent = data.available_version || 'Up to date';
+                    
+                    if (data.update_available) {
+                        document.getElementById('available-version').classList.add('update-available');
+                        document.getElementById('update-btn').style.display = 'inline-block';
+                        statusEl.className = 'update-status success';
+                        statusEl.textContent = 'New version available!';
+                    } else {
+                        document.getElementById('update-btn').style.display = 'none';
+                        statusEl.className = 'update-status success';
+                        statusEl.textContent = 'Firmware is up to date.';
+                    }
+                })
+                .catch(error => {
+                    statusEl.className = 'update-status error';
+                    statusEl.textContent = 'Error checking for updates: ' + error;
+                });
+        }
+
+        function triggerUpdate() {
+            var statusEl = document.getElementById('update-status');
+            statusEl.className = 'update-status info';
+            statusEl.textContent = 'Starting firmware update... Device will restart automatically.';
+            
+            fetch('/trigger-update', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        statusEl.className = 'update-status success';
+                        statusEl.textContent = 'Update triggered. Device will restart shortly...';
+                    } else {
+                        statusEl.className = 'update-status error';
+                        statusEl.textContent = 'Update failed: ' + data.message;
+                    }
+                })
+                .catch(error => {
+                    statusEl.className = 'update-status error';
+                    statusEl.textContent = 'Error triggering update: ' + error;
+                });
+        }
+
+        // Check for updates on page load
+        window.onload = checkUpdate;
+    </script>
 </body>
 </html>

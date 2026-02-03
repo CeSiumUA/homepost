@@ -25,14 +25,16 @@ static void tracker_scanner_cb(esp_ble_gap_cb_param_t *param){
         uint16_t major = ENDIAN_CHANGE_U16(ibeacon_data->ibeacon_vendor.major);
         uint16_t minor = ENDIAN_CHANGE_U16(ibeacon_data->ibeacon_vendor.minor);
         if (major == CONFIG_HOMEPOST_SCAN_MAJOR_FILTER && minor == CONFIG_HOMEPOST_SCAN_MINOR_FILTER){
+            if(tracker_scanner_event_group != NULL){ 
 #ifdef CONFIG_HOMEPOST_SCAN_USE_RSSI_FILTER
-            if (param->scan_rst.rssi > CONFIG_HOMEPOST_SCAN_RSSI_THRESHOLD){
-                xEventGroupSetBits(tracker_scanner_event_group, TRACKER_SCANNER_EVENT_BIT);
-            }
+                if (param->scan_rst.rssi > CONFIG_HOMEPOST_SCAN_RSSI_THRESHOLD){
+                    xEventGroupSetBits(tracker_scanner_event_group, TRACKER_SCANNER_EVENT_BIT);
+                }
 #else
-            ESP_LOGI(TAG, "iBeacon found (RSSI: %d dB)", param->scan_rst.rssi);
-            xEventGroupSetBits(tracker_scanner_event_group, TRACKER_SCANNER_EVENT_BIT);
+                ESP_LOGI(TAG, "iBeacon found (RSSI: %d dB)", param->scan_rst.rssi);
+                xEventGroupSetBits(tracker_scanner_event_group, TRACKER_SCANNER_EVENT_BIT);
 #endif
+            }
         }
     }
 }
@@ -90,7 +92,25 @@ static void tracker_scanner_task(void *arg){
 }
 
 void tracker_scanner_start_task(void){
+    if (scanner_task_handle != NULL) {
+        ESP_LOGW(TAG, "Tracker scanner task already running");
+        return;
+    }
     tracker_scanner_event_group = xEventGroupCreate();
     xTaskCreate(tracker_scanner_task, TRACKER_SCANNER_TASK_NAME, TRACKER_SCANNER_TASK_STACK_SIZE, NULL, TRACKER_SCANNER_TASK_PRIORITY, &scanner_task_handle);
     configASSERT(scanner_task_handle);
+}
+
+void tracker_scanner_stop_task(void){
+    if (scanner_task_handle != NULL) {
+        ble_scanner_stop();
+        ble_scanner_deinit();
+        vTaskDelete(scanner_task_handle);
+        scanner_task_handle = NULL;
+        ESP_LOGI(TAG, "Tracker scanner task stopped");
+    }
+    if (tracker_scanner_event_group != NULL) {
+        vEventGroupDelete(tracker_scanner_event_group);
+        tracker_scanner_event_group = NULL;
+    }
 }

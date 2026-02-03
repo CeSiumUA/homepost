@@ -1,5 +1,9 @@
 #include "http_server.h"
 
+#if CONFIG_HOMEPOST_OTA_ENABLED
+#include "ota_update.h"
+#endif
+
 static const char *TAG = __FILE__;
 static httpd_handle_t server = NULL;
 static esp_timer_handle_t restart_timer;
@@ -182,6 +186,53 @@ static const httpd_uri_t configure_mqtt = {
     .handler   = configure_mqtt_post_handler
 };
 
+#if CONFIG_HOMEPOST_OTA_ENABLED
+static esp_err_t check_update_get_handler(httpd_req_t *req)
+{
+    char response[256];
+    const char *current = ota_update_get_current_version();
+    const char *available = ota_update_get_available_version();
+    bool update_available = ota_update_is_available();
+
+    snprintf(response, sizeof(response),
+        "{\"current_version\":\"%s\",\"available_version\":\"%s\",\"update_available\":%s}",
+        current ? current : "",
+        available ? available : "",
+        update_available ? "true" : "false");
+
+    httpd_resp_set_type(req, "application/json");
+    httpd_resp_sendstr(req, response);
+    return ESP_OK;
+}
+
+static esp_err_t trigger_update_post_handler(httpd_req_t *req)
+{
+    ESP_LOGI(TAG, "Manual OTA update triggered via HTTP");
+    
+    if (ota_update_check_now() == ESP_OK) {
+        httpd_resp_set_type(req, "application/json");
+        httpd_resp_sendstr(req, "{\"status\":\"ok\",\"message\":\"Update check triggered\"}");
+    } else {
+        httpd_resp_set_status(req, "500 Internal Server Error");
+        httpd_resp_set_type(req, "application/json");
+        httpd_resp_sendstr(req, "{\"status\":\"error\",\"message\":\"Failed to trigger update check\"}");
+    }
+    return ESP_OK;
+}
+
+static const httpd_uri_t check_update = {
+    .uri       = "/check-update",
+    .method    = HTTP_GET,
+    .handler   = check_update_get_handler
+};
+
+static const httpd_uri_t trigger_update = {
+    .uri       = "/trigger-update",
+    .method    = HTTP_POST,
+    .handler   = trigger_update_post_handler
+};
+#endif
+
 static httpd_handle_t start_webserver(void)
 {
     httpd_handle_t http_server = NULL;
@@ -217,6 +268,10 @@ static httpd_handle_t start_webserver(void)
     httpd_register_uri_handler(http_server, &root);
     httpd_register_uri_handler(http_server, &configure_wifi);
     httpd_register_uri_handler(http_server, &configure_mqtt);
+#if CONFIG_HOMEPOST_OTA_ENABLED
+    httpd_register_uri_handler(http_server, &check_update);
+    httpd_register_uri_handler(http_server, &trigger_update);
+#endif
     return http_server;
 }
 

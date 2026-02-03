@@ -145,6 +145,48 @@ homepost/
 └── inc/                        # Header files
 ```
 
+## OTA (Over-The-Air) Updates
+
+Homepost supports automatic firmware updates from GitHub releases.
+
+### Requirements
+
+1. **Partition Table**: Must use OTA-compatible partition layout. In `menuconfig`:
+   - Navigate to `Partition Table`
+   - Select `Factory app, two OTA definitions`
+
+2. **Bootloader Rollback** (recommended): Enable automatic rollback on failed boot:
+   - Navigate to `Bootloader config`
+   - Enable `CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE`
+
+### GitHub Release Format
+
+When creating releases on GitHub:
+- **Tag format**: `release-v{version}` (e.g., `release-v1.3.0`)
+- **Asset filename**: `homepost-{version}.bin` (e.g., `homepost-1.3.0.bin`)
+
+### Configuration
+
+Configure OTA settings via `menuconfig` → `homepost configuration` → `OTA Update Configuration`:
+
+- `HOMEPOST_OTA_ENABLED`: Enable/disable OTA updates (default: enabled)
+- `HOMEPOST_OTA_GITHUB_OWNER`: GitHub repository owner/organization
+- `HOMEPOST_OTA_GITHUB_REPO`: Repository name (default: `homepost`)
+- `HOMEPOST_OTA_CHECK_INTERVAL_HOURS`: Update check interval (default: 4 hours)
+- `HOMEPOST_OTA_INITIAL_DELAY_SECONDS`: Delay before first check (default: 30 seconds)
+
+### Manual Update
+
+Access the web interface and use the "Firmware Update" section to:
+- View current and available versions
+- Check for updates manually
+- Trigger an update installation
+
+### API Endpoints
+
+- `GET /check-update`: Returns JSON with version info
+- `POST /trigger-update`: Triggers immediate update check and installation
+
 ## Troubleshooting
 
 ### WiFi Connection Issues

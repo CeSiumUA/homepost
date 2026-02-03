@@ -10,5 +10,6 @@
 #include "mqtt_connection.h"
 
 void tracker_scanner_start_task(void);
+void tracker_scanner_stop_task(void);
 
 #endif // TRACKER_SCANNER_H
