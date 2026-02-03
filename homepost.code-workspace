@@ -20,6 +20,7 @@
 			"mqtt_client.h": "c"
 		},
 		"cSpell.words": [
+			"bluedroid",
 			"brkr",
 			"crds",
 			"espressif",

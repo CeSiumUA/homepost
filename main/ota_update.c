@@ -291,16 +291,18 @@ static esp_err_t perform_ota_update(void)
 
     ESP_LOGI(TAG, "Starting OTA update from: %s", firmware_download_url);
 
-    // Stop BLE tracking to free memory
-    ESP_LOGI(TAG, "Stopping tracker scanner to free memory...");
+    ESP_LOGI(TAG, "Stopping tracker scanner and MQTT connection to free memory...");
     tracker_scanner_stop_task();
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    mqtt_connection_stop_task();
+    vTaskDelay(pdMS_TO_TICKS(3000));
 
     esp_http_client_config_t config = {
         .url = firmware_download_url,
         .timeout_ms = 60000,
         .crt_bundle_attach = esp_crt_bundle_attach,
         .keep_alive_enable = true,
+        .buffer_size = 8 * 1024,
+        .buffer_size_tx = 8 * 1024,
     };
 
     esp_https_ota_config_t ota_config = {
@@ -316,6 +318,7 @@ static esp_err_t perform_ota_update(void)
         ESP_LOGE(TAG, "OTA update failed: %s", esp_err_to_name(ret));
         // Restart tracker scanner since update failed
         tracker_scanner_start_task();
+        mqtt_connection_start_task();
     }
 
     return ret;

@@ -149,3 +149,30 @@ esp_err_t ble_scanner_start(ble_scanned_device_cb_t cb){
 
     return ret;
 }
+
+esp_err_t ble_scanner_stop(void){
+    esp_err_t ret;
+
+    ESP_LOGI(TAG, "Stopping the BLE scanner...");
+
+    ret = esp_ble_gap_stop_scanning();
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "esp_ble_gap_stop_scanning failed: %s", esp_err_to_name(ret));
+        return ret;
+    }
+
+    return ESP_OK;
+}
+
+esp_err_t ble_scanner_deinit(void){
+    ESP_LOGI(TAG, "Deinitializing the BLE scanner...");
+
+    esp_bluedroid_disable();
+    esp_bluedroid_deinit();
+    esp_bt_controller_disable();
+    esp_bt_controller_deinit();
+
+    ESP_ERROR_CHECK(esp_bt_controller_mem_release(ESP_BT_MODE_BLE));
+
+    return ESP_OK;
+}
