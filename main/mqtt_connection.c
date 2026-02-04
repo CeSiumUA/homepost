@@ -16,6 +16,13 @@ static esp_mqtt_client_handle_t client = NULL;
 static TaskHandle_t mqtt_connection_task_handle = NULL;
 static bool mqtt_connection_task_running = false;
 
+static char version_payload[32];
+static struct mqtt_connection_message_t version_message = {
+    .topic = CONFIG_HOMEPOST_MQTT_TOPIC "/homepost_version",
+    .payload = version_payload,
+    .qos = 1
+};
+
 static void mqtt_connection_subscribe_topics(void){
 
 }
@@ -117,6 +124,12 @@ static esp_err_t mqtt_connection_start(void){
     return ESP_OK;
 }
 
+static void mqtt_connection_publish_version(void){
+    snprintf(version_payload, sizeof(version_payload), "{\"version\":\"%s\"}", CONFIG_APP_PROJECT_VER);
+    ESP_LOGI(TAG, "Publishing firmware version: %s", CONFIG_APP_PROJECT_VER);
+    mqtt_connection_put_publish_queue(&version_message);
+}
+
 static void mqtt_connection_publish_loop(void){
     struct mqtt_connection_message_t msg = {0};
     int ret;
@@ -183,6 +196,9 @@ static void mqtt_connection_task(void *arg){
     }
 
     mqtt_connection_task_running = true;
+
+    // Publish firmware version on successful connection
+    mqtt_connection_publish_version();
 
     mqtt_connection_publish_loop();
 

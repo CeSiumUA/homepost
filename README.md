@@ -112,6 +112,7 @@ Configure the iBeacon major and minor IDs to match the devices you want to track
 
 The device publishes to topics under the configured base topic:
 
+- `{topic}/homepost_version`: Firmware version in JSON format (`{"version": "X.Y.Z"}`), published on MQTT connection
 - `{topic}/phone_present`: Presence detection status (iBeacon tracking)
 - `{topic}/temperature`: Temperature readings in JSON format (`{"temperature": XX.XX}`)
 - `{topic}/humidity`: Humidity readings in JSON format (`{"humidity": XX.XX}`)
