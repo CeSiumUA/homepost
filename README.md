@@ -173,7 +173,7 @@ When creating releases on GitHub:
 - **Tag format**: `release-v{version}` (e.g., `release-v1.3.0`)
 - **Asset filename**: `homepost-{version}.bin` (e.g., `homepost-1.3.0.bin`)
 
-### Configuration
+### OTA Configuration
 
 Configure OTA settings via `menuconfig` → `homepost configuration` → `OTA Update Configuration`:
 
