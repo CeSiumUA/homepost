@@ -67,6 +67,7 @@ Queue-based async publishing:
 2. MQTT task waits for connection → dequeues → publishes → waits for `MQTT_EVENT_PUBLISHED`
 3. Message struct: `{.topic, .payload, .qos}`
 4. Topics are string literals like `CONFIG_HOMEPOST_MQTT_TOPIC "/phone_present"`
+5. Firmware version is automatically published on successful MQTT connection to `{topic}/version`
 
 ### WiFi Dual-Mode Strategy ([main/wifi.c](main/wifi.c))
 - Mode: `WIFI_MODE_APSTA` (SoftAP + Station simultaneously)
