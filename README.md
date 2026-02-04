@@ -17,14 +17,16 @@ Homepost is an ESP32-based home monitoring and automation hub that combines BLE 
 
 ## Hardware Requirements
 
-- ESP32 development board
+- ESP32 development board (4MB flash minimum)
 - HTU21D temperature/humidity sensor (I2C, default: SDA=GPIO21, SCL=GPIO22)
 - Geiger counter sensor (connected via GPIO)
 - Power supply (USB or external)
 
+> **Note**: A custom PCB design is available in the `hardware/` directory (KiCad 8 format).
+
 ## Software Dependencies
 
-- ESP-IDF v4.4 or later
+- ESP-IDF v5.5 or later
 - FreeRTOS (included with ESP-IDF)
 
 ## Building the Project
@@ -126,7 +128,7 @@ Configure the HTU21 sensor via menuconfig:
 
 ## Project Structure
 
-``` с
+```text
 homepost/
 ├── CMakeLists.txt              # Project configuration
 ├── sdkconfig                   # Build configuration
@@ -141,8 +143,11 @@ homepost/
 │   ├── htu21_sensor.c          # HTU21 temperature/humidity sensor
 │   ├── mqtt_connection.c       # MQTT client
 │   ├── internal_storage.c      # NVS storage management
+│   ├── ota_update.c            # OTA firmware update
 │   └── Kconfig.projbuild       # Configuration menu
-└── inc/                        # Header files
+├── inc/                        # Header files
+└── hardware/                   # KiCad PCB design files
+    └── manufacturing/          # Gerber files for PCB fabrication
 ```
 
 ## OTA (Over-The-Air) Updates
@@ -151,21 +156,24 @@ Homepost supports automatic firmware updates from GitHub releases.
 
 ### Requirements
 
-1. **Partition Table**: Must use OTA-compatible partition layout. In `menuconfig`:
-   - Navigate to `Partition Table`
-   - Select `Factory app, two OTA definitions`
+1. **Flash Size**: Requires 4MB flash (configured in `menuconfig` → `Serial flasher config` → `Flash size`)
 
-2. **Bootloader Rollback** (recommended): Enable automatic rollback on failed boot:
+2. **Partition Table**: Must use OTA-compatible partition layout. In `menuconfig`:
+   - Navigate to `Partition Table`
+   - Select `Two large size OTA partitions` (required for 4MB flash with OTA)
+
+3. **Bootloader Rollback** (recommended): Enable automatic rollback on failed boot:
    - Navigate to `Bootloader config`
    - Enable `CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE`
 
 ### GitHub Release Format
 
 When creating releases on GitHub:
+
 - **Tag format**: `release-v{version}` (e.g., `release-v1.3.0`)
 - **Asset filename**: `homepost-{version}.bin` (e.g., `homepost-1.3.0.bin`)
 
-### Configuration
+### OTA Configuration
 
 Configure OTA settings via `menuconfig` → `homepost configuration` → `OTA Update Configuration`:
 
@@ -178,6 +186,7 @@ Configure OTA settings via `menuconfig` → `homepost configuration` → `OTA Up
 ### Manual Update
 
 Access the web interface and use the "Firmware Update" section to:
+
 - View current and available versions
 - Check for updates manually
 - Trigger an update installation
@@ -186,6 +195,14 @@ Access the web interface and use the "Firmware Update" section to:
 
 - `GET /check-update`: Returns JSON with version info
 - `POST /trigger-update`: Triggers immediate update check and installation
+
+## Hardware Design
+
+The `hardware/` directory contains a complete KiCad 8 project for a custom Homepost PCB:
+
+- **Schematic**: `homepost.kicad_sch`
+- **PCB Layout**: `homepost.kicad_pcb`
+- **Manufacturing Files**: `manufacturing/` directory contains Gerber files and drill files ready for PCB fabrication
 
 ## Troubleshooting
 
