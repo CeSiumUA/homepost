@@ -40,7 +40,7 @@
             background-color: #0056b3;
         }
         .update-button {
-            display: none;
+            display: inline-block;
             background-color: #28a745;
         }
         .version-info {
@@ -87,8 +87,8 @@
         <div class="version-info">
             Available Version: <span id="available-version">Checking...</span>
         </div>
-        <button type="button" onclick="checkUpdate()">Check for Updates</button>
-        <button type="button" onclick="triggerUpdate()" id="update-btn" class="update-button">Install Update</button>
+        <button type="button" onclick="checkUpdate()">Refresh</button>
+        <button type="button" onclick="triggerUpdate()" id="update-btn" class="update-button">Update Firmware</button>
         <div id="update-status" class="update-status"></div>
     </div>
 
@@ -144,11 +144,9 @@
                     
                     if (data.update_available) {
                         document.getElementById('available-version').classList.add('update-available');
-                        document.getElementById('update-btn').style.display = 'inline-block';
                         statusEl.className = 'update-status success';
                         statusEl.textContent = 'New version available!';
                     } else {
-                        document.getElementById('update-btn').style.display = 'none';
                         statusEl.className = 'update-status success';
                         statusEl.textContent = 'Firmware is up to date.';
                     }
