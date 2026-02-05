@@ -39,6 +39,10 @@
         .form-container button:hover {
             background-color: #0056b3;
         }
+        .update-button {
+            display: none;
+            background-color: #28a745;
+        }
         .version-info {
             margin-bottom: 10px;
             font-size: 14px;
@@ -84,7 +88,7 @@
             Available Version: <span id="available-version">Checking...</span>
         </div>
         <button type="button" onclick="checkUpdate()">Check for Updates</button>
-        <button type="button" onclick="triggerUpdate()" id="update-btn" style="display:none; background-color:#28a745;">Install Update</button>
+        <button type="button" onclick="triggerUpdate()" id="update-btn" class="update-button">Install Update</button>
         <div id="update-status" class="update-status"></div>
     </div>
 
