@@ -12,8 +12,9 @@ static const char *TAG = __FILE__;
 static EventGroupHandle_t tracker_scanner_event_group;
 TaskHandle_t scanner_task_handle = NULL;
 static char presence_payload[32] = {0};
+static char presence_topic[100] = {0};
 static struct mqtt_connection_message_t presence_message = {
-    .topic = CONFIG_HOMEPOST_MQTT_TOPIC "/phone_present",
+    .topic = presence_topic,
     .payload = presence_payload,
     .qos = 0
 };
@@ -96,6 +97,16 @@ void tracker_scanner_start_task(void){
         ESP_LOGW(TAG, "Tracker scanner task already running");
         return;
     }
+
+    // Build presence topic from base topic
+    char base_topic[64];
+    if (mqtt_connection_get_base_topic(base_topic, sizeof(base_topic)) == ESP_OK) {
+        snprintf(presence_topic, sizeof(presence_topic), "%s/phone_present", base_topic);
+    } else {
+        ESP_LOGE(TAG, "Failed to get base topic, using default");
+        snprintf(presence_topic, sizeof(presence_topic), "%s/phone_present", CONFIG_HOMEPOST_MQTT_TOPIC);
+    }
+
     tracker_scanner_event_group = xEventGroupCreate();
     xTaskCreate(tracker_scanner_task, TRACKER_SCANNER_TASK_NAME, TRACKER_SCANNER_TASK_STACK_SIZE, NULL, TRACKER_SCANNER_TASK_PRIORITY, &scanner_task_handle);
     configASSERT(scanner_task_handle);

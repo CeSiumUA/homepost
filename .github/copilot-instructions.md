@@ -36,7 +36,7 @@ All project settings via menuconfig under "homepost configuration":
 - BT/Scanner options: Device name, RSSI filters, iBeacon major/minor IDs, scan timeout
 - WiFi: SoftAP credentials, reconnection timer (`CONFIG_HOMEPOST_WIFI_RECONNECTION_TIMER_PERIOD_US`)
 - Storage: NVS key names (e.g., `CONFIG_HOMEPOST_WIFI_CREDENTIALS_STORAGE_KEY`)
-- MQTT topic base configured at compile time, not runtime
+- MQTT topic base: Runtime configurable via web interface, stored in NVS (falls back to `CONFIG_HOMEPOST_MQTT_TOPIC` if not set)
 
 Access in code via `CONFIG_*` macros (e.g., `CONFIG_HOMEPOST_SCAN_MAJOR_FILTER`)
 

@@ -96,7 +96,8 @@ idf.py -p PORT flash monitor
 2. Connect to this network and access the web interface at `http://192.168.4.1`
 3. Configure:
    - WiFi credentials for your home network
-   - MQTT broker settings (address, port, credentials, topic)
+   - MQTT broker settings (address, port, credentials)
+   - MQTT topic base (runtime configurable via web interface)
    - iBeacon tracking parameters
    - Publish intervals
 

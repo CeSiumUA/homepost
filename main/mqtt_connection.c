@@ -1,5 +1,6 @@
 #include "mqtt_connection.h"
 
+#define MQTT_CONNECTION_TOPIC_MAX_LEN                       64
 #define MQTT_CONNECTION_TASK_PRIORITY                       7
 #define MQTT_CONNECTION_STACK_SIZE                          3072
 #define MQTT_CONNECTION_TASK_NAME                           "mqtt_conn"
@@ -17,8 +18,9 @@ static TaskHandle_t mqtt_connection_task_handle = NULL;
 static bool mqtt_connection_task_running = false;
 
 static char version_payload[32];
+static char version_topic[100];
 static struct mqtt_connection_message_t version_message = {
-    .topic = CONFIG_HOMEPOST_MQTT_TOPIC "/homepost_version",
+    .topic = version_topic,
     .payload = version_payload,
     .qos = 1
 };
@@ -125,6 +127,12 @@ static esp_err_t mqtt_connection_start(void){
 }
 
 static void mqtt_connection_publish_version(void){
+    char base_topic[MQTT_CONNECTION_TOPIC_MAX_LEN];
+    if (mqtt_connection_get_base_topic(base_topic, sizeof(base_topic)) != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to get base topic for version publish");
+        return;
+    }
+    snprintf(version_topic, sizeof(version_topic), "%s/homepost_version", base_topic);
     snprintf(version_payload, sizeof(version_payload), "{\"version\":\"%s\"}", CONFIG_APP_PROJECT_VER);
     ESP_LOGI(TAG, "Publishing firmware version: %s", CONFIG_APP_PROJECT_VER);
     mqtt_connection_put_publish_queue(&version_message);
@@ -241,4 +249,23 @@ esp_err_t mqtt_connection_put_publish_queue(struct mqtt_connection_message_t *ms
     }
 
     return ret == pdTRUE ? ESP_OK : ESP_FAIL;
+}
+
+esp_err_t mqtt_connection_get_base_topic(char *topic_out, size_t topic_out_size){
+    if (topic_out == NULL || topic_out_size == 0) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    if (internal_storage_check_mqtt_topic_preserved()) {
+        return internal_storage_get_mqtt_topic(topic_out);
+    }
+
+    // Fallback to compile-time default
+    size_t default_len = strlen(CONFIG_HOMEPOST_MQTT_TOPIC);
+    if (default_len >= topic_out_size) {
+        return ESP_ERR_INVALID_SIZE;
+    }
+    strncpy(topic_out, CONFIG_HOMEPOST_MQTT_TOPIC, topic_out_size);
+    topic_out[topic_out_size - 1] = '\0';
+    return ESP_OK;
 }
