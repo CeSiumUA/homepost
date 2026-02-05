@@ -32,7 +32,7 @@ static void http_server_restart_timer_callback(void *arg)
 
 static esp_err_t configure_mqtt_post_handler(httpd_req_t *req)
 {
-    char buff[200];
+    char buff[250];
     int ret, remaining = req->content_len;
     if (remaining >= sizeof(buff)) {
         // Respond with 500 Internal Server Error
@@ -61,7 +61,8 @@ static esp_err_t configure_mqtt_post_handler(httpd_req_t *req)
     char *mqtt_client_id = strstr(buff, "mqtt-client-id=");
     char *mqtt_user = strstr(buff, "mqtt-username=");
     char *mqtt_password = strstr(buff, "mqtt-password=");
-    if(mqtt_server == NULL || mqtt_port == NULL || mqtt_client_id == NULL || mqtt_user == NULL || mqtt_password == NULL){
+    char *mqtt_topic = strstr(buff, "mqtt-topic=");
+    if(mqtt_server == NULL || mqtt_port == NULL || mqtt_client_id == NULL || mqtt_user == NULL || mqtt_password == NULL || mqtt_topic == NULL){
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid request");
         return ESP_FAIL;
     }
@@ -71,13 +72,15 @@ static esp_err_t configure_mqtt_post_handler(httpd_req_t *req)
     mqtt_client_id += strlen("mqtt-client-id=");
     mqtt_user += strlen("mqtt-username=");
     mqtt_password += strlen("mqtt-password=");
+    mqtt_topic += strlen("mqtt-topic=");
 
     char *mqtt_server_end = strstr(mqtt_server, "&");
     char *mqtt_port_end = strstr(mqtt_port, "&");
     char *mqtt_client_id_end = strstr(mqtt_client_id, "&");
     char *mqtt_user_end = strstr(mqtt_user, "&");
+    char *mqtt_password_end = strstr(mqtt_password, "&");
 
-    if (mqtt_server_end == NULL || mqtt_port_end == NULL || mqtt_client_id_end == NULL || mqtt_user_end == NULL){
+    if (mqtt_server_end == NULL || mqtt_port_end == NULL || mqtt_client_id_end == NULL || mqtt_user_end == NULL || mqtt_password_end == NULL){
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid request");
         return ESP_FAIL;
     }
@@ -86,12 +89,24 @@ static esp_err_t configure_mqtt_post_handler(httpd_req_t *req)
     *mqtt_port_end = '\0';
     *mqtt_client_id_end = '\0';
     *mqtt_user_end = '\0';
+    *mqtt_password_end = '\0';
+
+    // Validate MQTT topic: reject empty or containing invalid characters (+ and #)
+    if (strlen(mqtt_topic) == 0) {
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "MQTT topic cannot be empty");
+        return ESP_FAIL;
+    }
+    if (strchr(mqtt_topic, '+') != NULL || strchr(mqtt_topic, '#') != NULL) {
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "MQTT topic cannot contain wildcard characters (+ or #)");
+        return ESP_FAIL;
+    }
 
     ESP_ERROR_CHECK(internal_storage_save_mqtt_broker(mqtt_server));
     ESP_ERROR_CHECK(internal_storage_save_mqtt_port(atoi(mqtt_port)));
     ESP_ERROR_CHECK(internal_storage_save_mqtt_client_id(mqtt_client_id));
     ESP_ERROR_CHECK(internal_storage_save_mqtt_username(mqtt_user));
     ESP_ERROR_CHECK(internal_storage_save_mqtt_password(mqtt_password));
+    ESP_ERROR_CHECK(internal_storage_save_mqtt_topic(mqtt_topic));
 
     mqtt_connection_start_task();
     ESP_LOGI(TAG, "MQTT connection started successfully");

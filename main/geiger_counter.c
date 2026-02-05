@@ -13,8 +13,9 @@ static portMUX_TYPE gpio_spinlock = portMUX_INITIALIZER_UNLOCKED;
 static void geiger_counter_timer_cb(void *arg);
 
 static char radiation_payload[32];
+static char radiation_topic[100];
 static struct mqtt_connection_message_t radiation_message = {
-    .topic = CONFIG_HOMEPOST_MQTT_TOPIC "/radiation",
+    .topic = radiation_topic,
     .payload = radiation_payload,
     .qos = 0
 };
@@ -90,6 +91,15 @@ static void geiger_counter_timer_cb(void *arg)
 }
 
 void geiger_counter_start(void){
+    // Build MQTT topic from base topic
+    char base_topic[64];
+    if (mqtt_connection_get_base_topic(base_topic, sizeof(base_topic)) == ESP_OK) {
+        snprintf(radiation_topic, sizeof(radiation_topic), "%s/radiation", base_topic);
+    } else {
+        ESP_LOGE(TAG, "Failed to get base topic, using default");
+        snprintf(radiation_topic, sizeof(radiation_topic), "%s/radiation", CONFIG_HOMEPOST_MQTT_TOPIC);
+    }
+
     ESP_ERROR_CHECK(gpio_config(&io_config));
     ESP_ERROR_CHECK(gpio_install_isr_service(GPIO_INTR_FLAG_DEFAULT));
     ESP_ERROR_CHECK(gpio_isr_handler_add(GPIO_CPM_PIN_SEL, geiger_counter_gpio_isr_handler, (void *)GPIO_CPM_PIN_SEL));

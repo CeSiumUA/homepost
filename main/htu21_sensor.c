@@ -23,15 +23,17 @@ static esp_timer_handle_t htu21_timer;
 
 static char temperature_payload[32];
 static char humidity_payload[32];
+static char temperature_topic[100];
+static char humidity_topic[100];
 
 static struct mqtt_connection_message_t temperature_message = {
-    .topic = CONFIG_HOMEPOST_MQTT_TOPIC "/temperature",
+    .topic = temperature_topic,
     .payload = temperature_payload,
     .qos = 0
 };
 
 static struct mqtt_connection_message_t humidity_message = {
-    .topic = CONFIG_HOMEPOST_MQTT_TOPIC "/humidity",
+    .topic = humidity_topic,
     .payload = humidity_payload,
     .qos = 0
 };
@@ -152,6 +154,17 @@ static esp_err_t htu21_init(void)
 void htu21_sensor_start(void)
 {
     esp_err_t ret;
+
+    // Build MQTT topics from base topic
+    char base_topic[64];
+    if (mqtt_connection_get_base_topic(base_topic, sizeof(base_topic)) == ESP_OK) {
+        snprintf(temperature_topic, sizeof(temperature_topic), "%s/temperature", base_topic);
+        snprintf(humidity_topic, sizeof(humidity_topic), "%s/humidity", base_topic);
+    } else {
+        ESP_LOGE(TAG, "Failed to get base topic, using default");
+        snprintf(temperature_topic, sizeof(temperature_topic), "%s/temperature", CONFIG_HOMEPOST_MQTT_TOPIC);
+        snprintf(humidity_topic, sizeof(humidity_topic), "%s/humidity", CONFIG_HOMEPOST_MQTT_TOPIC);
+    }
 
     ESP_LOGI(TAG, "Starting HTU21 sensor on I2C bus (SDA: %d, SCL: %d, freq: %d Hz)",
              CONFIG_HOMEPOST_HTU21_I2C_SDA_GPIO, CONFIG_HOMEPOST_HTU21_I2C_SCL_GPIO,
