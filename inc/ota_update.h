@@ -47,4 +47,14 @@ const char* ota_update_get_current_version(void);
  */
 const char* ota_update_get_available_version(void);
 
+/**
+ * @brief Synchronously check GitHub for updates
+ * 
+ * This function performs an immediate check against GitHub releases API
+ * and updates the available version information.
+ * 
+ * @return ESP_OK if check completed successfully (regardless of update availability)
+ */
+esp_err_t ota_update_check_for_update(void);
+
 #endif // OTA_UPDATE_H

@@ -205,6 +205,13 @@ static const httpd_uri_t configure_mqtt = {
 static esp_err_t check_update_get_handler(httpd_req_t *req)
 {
     char response[256];
+    
+    // Trigger actual GitHub releases check
+    esp_err_t ret = ota_update_check_for_update();
+    if (ret != ESP_OK) {
+        ESP_LOGW(TAG, "Failed to check for updates: %s", esp_err_to_name(ret));
+    }
+
     const char *current = ota_update_get_current_version();
     const char *available = ota_update_get_available_version();
     bool update_available = ota_update_is_available();
