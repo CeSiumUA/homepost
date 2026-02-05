@@ -180,6 +180,9 @@
                     statusEl.textContent = 'Error triggering update: ' + error;
                 });
         }
+
+        // Check for updates on page load
+        window.onload = checkUpdate;
     </script>
 </body>
 </html>
