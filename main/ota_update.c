@@ -415,8 +415,3 @@ const char* ota_update_get_available_version(void)
     }
     return available_version;
 }
-
-esp_err_t ota_update_check_for_update(void)
-{
-    return check_for_update();
-}
