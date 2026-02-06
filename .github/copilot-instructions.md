@@ -80,6 +80,8 @@ Queue-based async publishing:
 - Access via `extern const char rootpage_start[] asm("_binary_index_html_start")`
 - POST handlers parse URL-encoded form data manually (no JSON)
 - Restart device via `esp_timer` callback after configuration changes
+- `GET /config` returns stored NVS values as JSON (passwords excluded, only `*_set` booleans)
+- Password fields use `"********"` placeholder in UI; POST handlers skip saving when value matches placeholder
 
 ### BLE iBeacon Tracking ([main/tracker_scanner.c](main/tracker_scanner.c))
 - Passive scanning only (`BLE_SCAN_TYPE_PASSIVE`)

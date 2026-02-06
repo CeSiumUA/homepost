@@ -30,6 +30,61 @@ static void http_server_restart_timer_callback(void *arg)
     esp_restart();
 }
 
+#define PASSWORD_PLACEHOLDER "********"
+
+static esp_err_t config_get_handler(httpd_req_t *req)
+{
+    char response[512];
+    char wifi_ssid[33] = {0};
+    char wifi_password_unused[65] = {0};
+    char mqtt_broker[101] = {0};
+    uint16_t mqtt_port = 0;
+    char mqtt_client_id[65] = {0};
+    char mqtt_username[65] = {0};
+    char mqtt_topic[65] = {0};
+    bool wifi_password_set = false;
+    bool mqtt_password_set = false;
+
+    if (internal_storage_check_wifi_credentials_preserved()) {
+        internal_storage_get_wifi_credentials(wifi_ssid, wifi_password_unused);
+        wifi_password_set = true;
+        memset(wifi_password_unused, 0, sizeof(wifi_password_unused));
+    }
+
+    if (internal_storage_check_mqtt_broker_preserved()) {
+        internal_storage_get_mqtt_broker(mqtt_broker);
+    }
+    if (internal_storage_check_mqtt_port_preserved()) {
+        internal_storage_get_mqtt_port(&mqtt_port);
+    }
+    if (internal_storage_check_mqtt_client_id_preserved()) {
+        internal_storage_get_mqtt_client_id(mqtt_client_id);
+    }
+    if (internal_storage_check_mqtt_username_preserved()) {
+        internal_storage_get_mqtt_username(mqtt_username);
+    }
+    if (internal_storage_check_mqtt_password_preserved()) {
+        mqtt_password_set = true;
+    }
+    if (internal_storage_check_mqtt_topic_preserved()) {
+        internal_storage_get_mqtt_topic(mqtt_topic);
+    }
+
+    snprintf(response, sizeof(response),
+        "{\"wifi_ssid\":\"%s\",\"wifi_password_set\":%s,"
+        "\"mqtt_broker\":\"%s\",\"mqtt_port\":%d,"
+        "\"mqtt_client_id\":\"%s\",\"mqtt_username\":\"%s\","
+        "\"mqtt_password_set\":%s,\"mqtt_topic\":\"%s\"}",
+        wifi_ssid, wifi_password_set ? "true" : "false",
+        mqtt_broker, mqtt_port,
+        mqtt_client_id, mqtt_username,
+        mqtt_password_set ? "true" : "false", mqtt_topic);
+
+    httpd_resp_set_type(req, "application/json");
+    httpd_resp_sendstr(req, response);
+    return ESP_OK;
+}
+
 static esp_err_t configure_mqtt_post_handler(httpd_req_t *req)
 {
     char buff[250];
@@ -105,7 +160,9 @@ static esp_err_t configure_mqtt_post_handler(httpd_req_t *req)
     ESP_ERROR_CHECK(internal_storage_save_mqtt_port(atoi(mqtt_port)));
     ESP_ERROR_CHECK(internal_storage_save_mqtt_client_id(mqtt_client_id));
     ESP_ERROR_CHECK(internal_storage_save_mqtt_username(mqtt_user));
-    ESP_ERROR_CHECK(internal_storage_save_mqtt_password(mqtt_password));
+    if (strcmp(mqtt_password, PASSWORD_PLACEHOLDER) != 0) {
+        ESP_ERROR_CHECK(internal_storage_save_mqtt_password(mqtt_password));
+    }
     ESP_ERROR_CHECK(internal_storage_save_mqtt_topic(mqtt_topic));
 
     mqtt_connection_start_task();
@@ -158,9 +215,17 @@ static esp_err_t configure_wifi_post_handler(httpd_req_t *req)
 
     *ssid_end = '\0';
 
-    ESP_LOGI(TAG, "SSID: %s, Password: %s", ssid, password);
+    ESP_LOGI(TAG, "SSID: %s", ssid);
 
-    ESP_ERROR_CHECK(internal_storage_save_wifi_credentials(ssid, password));
+    if (strcmp(password, PASSWORD_PLACEHOLDER) == 0 && internal_storage_check_wifi_credentials_preserved()) {
+        // Password unchanged, retrieve existing password and re-save with new SSID
+        char existing_ssid[33] = {0};
+        char existing_password[65] = {0};
+        ESP_ERROR_CHECK(internal_storage_get_wifi_credentials(existing_ssid, existing_password));
+        ESP_ERROR_CHECK(internal_storage_save_wifi_credentials(ssid, existing_password));
+    } else {
+        ESP_ERROR_CHECK(internal_storage_save_wifi_credentials(ssid, password));
+    }
     if(wifi_connect_sta(true)){
         ESP_LOGI(TAG, "WiFi connection succeeded");
         if(esp_timer_start_once(restart_timer, CONFIG_HOMEPOST_RESTART_DELAY_MICROSECONDS) == ESP_OK){
@@ -199,6 +264,12 @@ static const httpd_uri_t configure_mqtt = {
     .uri       = "/mqtt-setup",
     .method    = HTTP_POST,
     .handler   = configure_mqtt_post_handler
+};
+
+static const httpd_uri_t get_config = {
+    .uri       = "/config",
+    .method    = HTTP_GET,
+    .handler   = config_get_handler
 };
 
 #if CONFIG_HOMEPOST_OTA_ENABLED
@@ -283,6 +354,7 @@ static httpd_handle_t start_webserver(void)
     httpd_register_uri_handler(http_server, &root);
     httpd_register_uri_handler(http_server, &configure_wifi);
     httpd_register_uri_handler(http_server, &configure_mqtt);
+    httpd_register_uri_handler(http_server, &get_config);
 #if CONFIG_HOMEPOST_OTA_ENABLED
     httpd_register_uri_handler(http_server, &check_update);
     httpd_register_uri_handler(http_server, &trigger_update);
