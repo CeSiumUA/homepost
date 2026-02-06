@@ -99,7 +99,7 @@
             <input type="text" id="ssid" name="ssid" maxlength="32" required>
             
             <label for="password">Password:</label>
-            <input type="password" id="password" name="password" maxlength="64" required>
+            <input type="password" id="password" name="password" maxlength="64" required onfocus="clearPasswordPlaceholder(this)">
             
             <button type="submit">Connect</button>
         </form>
@@ -121,7 +121,7 @@
             <input type="text" id="mqtt-username" name="mqtt-username" maxlength="64">
             
             <label for="mqtt-password">Password:</label>
-            <input type="password" id="mqtt-password" name="mqtt-password" maxlength="64">
+            <input type="password" id="mqtt-password" name="mqtt-password" maxlength="64" onfocus="clearPasswordPlaceholder(this)">
 
             <label for="mqtt-topic">Topic:</label>
             <input type="text" id="mqtt-topic" name="mqtt-topic" maxlength="64" required>
@@ -131,6 +131,48 @@
     </div>
 
     <script>
+        var PASSWORD_PLACEHOLDER = '********';
+
+        function loadConfig() {
+            fetch('/config')
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    if (data.wifi_ssid) {
+                        document.getElementById('ssid').value = data.wifi_ssid;
+                    }
+                    if (data.wifi_password_set) {
+                        document.getElementById('password').value = PASSWORD_PLACEHOLDER;
+                    }
+                    if (data.mqtt_broker) {
+                        document.getElementById('mqtt-server').value = data.mqtt_broker;
+                    }
+                    if (data.mqtt_port) {
+                        document.getElementById('mqtt-port').value = data.mqtt_port;
+                    }
+                    if (data.mqtt_client_id) {
+                        document.getElementById('mqtt-client-id').value = data.mqtt_client_id;
+                    }
+                    if (data.mqtt_username) {
+                        document.getElementById('mqtt-username').value = data.mqtt_username;
+                    }
+                    if (data.mqtt_password_set) {
+                        document.getElementById('mqtt-password').value = PASSWORD_PLACEHOLDER;
+                    }
+                    if (data.mqtt_topic) {
+                        document.getElementById('mqtt-topic').value = data.mqtt_topic;
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error loading config:', error);
+                });
+        }
+
+        function clearPasswordPlaceholder(el) {
+            if (el.value === PASSWORD_PLACEHOLDER) {
+                el.value = '';
+            }
+        }
+
         function checkUpdate() {
             var statusEl = document.getElementById('update-status');
             statusEl.className = 'update-status info';
@@ -179,8 +221,11 @@
                 });
         }
 
-        // Check for updates on page load
-        window.onload = checkUpdate;
+        // Load config and check for updates on page load
+        window.onload = function() {
+            loadConfig();
+            checkUpdate();
+        };
     </script>
 </body>
 </html>
