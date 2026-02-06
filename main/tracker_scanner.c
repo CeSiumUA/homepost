@@ -11,11 +11,19 @@
 static const char *TAG = __FILE__;
 static EventGroupHandle_t tracker_scanner_event_group;
 TaskHandle_t scanner_task_handle = NULL;
+static int last_rssi = 0;
 static char presence_payload[32] = {0};
 static char presence_topic[100] = {0};
+static char rssi_payload[32] = {0};
+static char rssi_topic[100] = {0};
 static struct mqtt_connection_message_t presence_message = {
     .topic = presence_topic,
     .payload = presence_payload,
+    .qos = 0
+};
+static struct mqtt_connection_message_t rssi_message = {
+    .topic = rssi_topic,
+    .payload = rssi_payload,
     .qos = 0
 };
 
@@ -29,10 +37,12 @@ static void tracker_scanner_cb(esp_ble_gap_cb_param_t *param){
             if(tracker_scanner_event_group != NULL){ 
 #ifdef CONFIG_HOMEPOST_SCAN_USE_RSSI_FILTER
                 if (param->scan_rst.rssi > CONFIG_HOMEPOST_SCAN_RSSI_THRESHOLD){
+                    last_rssi = param->scan_rst.rssi;
                     xEventGroupSetBits(tracker_scanner_event_group, TRACKER_SCANNER_EVENT_BIT);
                 }
 #else
                 ESP_LOGI(TAG, "iBeacon found (RSSI: %d dB)", param->scan_rst.rssi);
+                last_rssi = param->scan_rst.rssi;
                 xEventGroupSetBits(tracker_scanner_event_group, TRACKER_SCANNER_EVENT_BIT);
 #endif
             }
@@ -79,6 +89,7 @@ static void tracker_scanner_task(void *arg){
         else{
             ESP_LOGI(TAG, "Tracker lost");
         }
+
         memset(presence_payload, 0, sizeof(presence_payload));
         ret = snprintf(presence_payload, sizeof(presence_payload), "{\"state\": \"%s\"}", tracker_present ? "ON" : "OFF");
         if (ret < 0 || ret >= sizeof(presence_payload)) {
@@ -88,6 +99,19 @@ static void tracker_scanner_task(void *arg){
 
         if(mqtt_connection_put_publish_queue(&presence_message) != ESP_OK) {
             ESP_LOGE(TAG, "Failed to enqueue presence message");
+        }
+
+        // Publish RSSI when tracker is present
+        if (tracker_present) {
+            memset(rssi_payload, 0, sizeof(rssi_payload));
+            ret = snprintf(rssi_payload, sizeof(rssi_payload), "{\"rssi\": %d}", last_rssi);
+            if (ret < 0 || ret >= sizeof(rssi_payload)) {
+                ESP_LOGE(TAG, "Failed to create RSSI payload");
+            } else {
+                if(mqtt_connection_put_publish_queue(&rssi_message) != ESP_OK) {
+                    ESP_LOGE(TAG, "Failed to enqueue RSSI message");
+                }
+            }
         }
     }
 }
@@ -102,9 +126,11 @@ void tracker_scanner_start_task(void){
     char base_topic[64];
     if (mqtt_connection_get_base_topic(base_topic, sizeof(base_topic)) == ESP_OK) {
         snprintf(presence_topic, sizeof(presence_topic), "%s/phone_present", base_topic);
+        snprintf(rssi_topic, sizeof(rssi_topic), "%s/phone_rssi", base_topic);
     } else {
         ESP_LOGE(TAG, "Failed to get base topic, using default");
         snprintf(presence_topic, sizeof(presence_topic), "%s/phone_present", CONFIG_HOMEPOST_MQTT_TOPIC);
+        snprintf(rssi_topic, sizeof(rssi_topic), "%s/phone_rssi", CONFIG_HOMEPOST_MQTT_TOPIC);
     }
 
     tracker_scanner_event_group = xEventGroupCreate();

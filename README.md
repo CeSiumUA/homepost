@@ -115,6 +115,7 @@ The device publishes to topics under the configured base topic:
 
 - `{topic}/homepost_version`: Firmware version in JSON format (`{"version": "X.Y.Z"}`), published on MQTT connection
 - `{topic}/phone_present`: Presence detection status (iBeacon tracking)
+- `{topic}/phone_rssi`: BLE RSSI signal strength in JSON format (`{"rssi": -XX}`) when device is present
 - `{topic}/temperature`: Temperature readings in JSON format (`{"temperature": XX.XX}`)
 - `{topic}/humidity`: Humidity readings in JSON format (`{"humidity": XX.XX}`)
 - `{topic}/geiger`: Geiger counter CPM (counts per minute) data
